@@ -22,3 +22,15 @@
            (common-with-custom-message-n-params :bad-format nil)))
     (is (= {:status 400 :message "custom 1 2 3"}
            (common-with-custom-message-n-params :bad-format "custom %s %s %s" "1" "2" "3")))))
+
+(deftest format-message-test
+  (testing "text will be replaced"
+    (is (= "my message is nice"
+           (format-message "my message is %s" "nice")))
+    (is (= "my message is nice"
+           (format-message "my message is nice" "bad")))
+    (is (= "my message is nice and splendid"
+           (format-message "my message is %s and %s" "nice" "splendid")))
+    (is (= "my message is nice"
+           (format-message "my message is nice")))
+    ))
