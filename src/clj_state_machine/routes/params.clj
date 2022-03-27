@@ -40,5 +40,3 @@
    accepted :- [s/Str]]
   (validate-mandatory request body mandatory)
   (mop-fields body accepted))
-
-(validate-and-mop {} {:name "Joao" :age 45 :description "Johnny" :hacking "trying"} ["name","age"] ["name", "age", "description"])
