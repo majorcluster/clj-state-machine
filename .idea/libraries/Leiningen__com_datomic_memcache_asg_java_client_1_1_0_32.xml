@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="Leiningen: com.datomic/memcache-asg-java-client:1.1.0.32">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/com/datomic/memcache-asg-java-client/1.1.0.32/memcache-asg-java-client-1.1.0.32.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
