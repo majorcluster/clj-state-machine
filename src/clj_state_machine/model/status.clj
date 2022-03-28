@@ -5,7 +5,3 @@
   []
   {:status/id s/Uuid
    (s/optional-key :status/name) s/Str})
-
-(defn StatusPostDef
-  []
-  {:status/name s/Str})

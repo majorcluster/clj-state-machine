@@ -34,3 +34,19 @@
     (is (= "my message is nice"
            (format-message "my message is nice")))
     ))
+
+(deftest redefine-entity-keys-test
+  (testing "map has keys redefined"
+    (is (= {:status/id 12 :status/name "name"}
+           (redefine-entity-keys "status" {:id 12 :name "name"})))
+    (is (= {}
+           (redefine-entity-keys "status" {})))))
+
+(deftest undefine-entity-keys-test
+  (testing "map has keys undefined"
+    (is (= {:id 12 :name "name"}
+           (undefine-entity-keys "status" {:status/id 12 :status/name "name"})))
+    (is (= {:status/id 12 :status/name "name"}
+           (undefine-entity-keys "test" {:status/id 12 :status/name "name"})))
+    (is (= {}
+           (undefine-entity-keys "status" {})))))

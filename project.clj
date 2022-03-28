@@ -7,6 +7,7 @@
                  [io.pedestal/pedestal.route "0.5.7"]
                  [io.pedestal/pedestal.jetty "0.5.7"]
                  [org.slf4j/slf4j-simple "1.7.28"]
+                 [org.clojure/data.json "2.4.0"]
 
                  [prismatic/schema "1.1.12"]
 
