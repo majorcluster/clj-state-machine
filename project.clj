@@ -14,5 +14,7 @@
 
                  ;TODO: create a test/dev profile
                  [prismatic/schema-generators "0.1.3"]
+                 [nubank/matcher-combinators "3.3.1"]
                  [org.clojure/test.check "0.10.0-alpha3"]]
+  :plugins [[lein-auto "0.1.3"]]
   :main ^{:skip-aot true} clj-state-machine.core)

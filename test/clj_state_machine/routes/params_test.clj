@@ -1,6 +1,9 @@
 (ns clj-state-machine.routes.params-test
   (:require [clojure.test :refer :all]
-            [clj-state-machine.routes.params :refer :all]))
+            [clj-state-machine.routes.params :refer :all]
+            [midje.sweet :refer :all]
+            [matcher-combinators.test])
+  (:import (clojure.lang ExceptionInfo)))
 
 (deftest validate-mandatory-test
   (testing "when all mandatory are present returns true"
@@ -8,15 +11,18 @@
     (is (validate-mandatory {} {:name "Lenin" :age 45} []))
     (is (validate-mandatory {} {:name "Lenin" :age 45} ["name"])))
   (testing "when mandatory are not present throws ex-info"
-    (is (thrown-with-msg? clojure.lang.ExceptionInfo
-                      #"Mandatory fields validation failed"
+    (is (thrown-match? ExceptionInfo
+                      {:type :bad-format
+                       :message "Field :age is not present. "}
                       (validate-mandatory {} {:name "Lenin"} ["name" "age"])))
-    (is (thrown-with-msg? clojure.lang.ExceptionInfo
-                          #"Mandatory fields validation failed"
-                          (validate-mandatory {} {} ["name" "age"])))
-    (is (thrown-with-msg? clojure.lang.ExceptionInfo
-                          #"Mandatory fields validation failed"
-                          (validate-mandatory {} {:name "Lenin"} ["age"])))
+    (is (thrown-match? ExceptionInfo
+                      {:type :bad-format
+                       :message "Field :name is not present. Field :age is not present. "}
+                      (validate-mandatory {} {} ["name" "age"])))
+    (is (thrown-match? ExceptionInfo
+                      {:type :bad-format
+                       :message "Field :age is not present. "}
+                      (validate-mandatory {} {:name "Lenin"} ["age"])))
     ))
 
 (deftest mop-fields-test

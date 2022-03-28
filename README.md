@@ -4,7 +4,10 @@ A Clojure library designed to ... well, that part is up to you.
 
 ## Usage
 
-FIXME
+start dev server:
+```shell
+lein auto run
+```
 
 ## License
 

@@ -18,7 +18,8 @@
         not-present-message (apply str not-present-messages)
         ]
     (cond (empty? not-present) true
-          :else ((throw (ex-info "Mandatory fields validation failed" {:message not-present-message}))
+          :else ((throw (ex-info "Mandatory fields validation failed" {:type :bad-format
+                                                                       :message not-present-message}))
                   ))
     ))
 
