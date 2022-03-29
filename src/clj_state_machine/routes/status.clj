@@ -35,6 +35,7 @@
   [request]
   (try
     (let [crude-body (:json-params request)
+          ;remove name if having another attr
           mandatory-fields ["id","name"]
           allowed-fields ["id","name"]
           body (r.params/validate-and-mop request crude-body mandatory-fields allowed-fields)]

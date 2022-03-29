@@ -18,6 +18,14 @@
   {:status/id (m.utils/uuid)
    :status/name "on-progress"})
 
+(def status-to-update-datomic
+  {:status/id (m.utils/uuid)
+   :status/name "stucked"})
+
+(def status-to-delete-datomic
+  {:status/id (m.utils/uuid)
+   :status/name "delete-me"})
+
 (def base-message
   {:message ""
    :payload {}})
@@ -37,6 +45,16 @@
   []
   {:id (get status-present-datomic :status/id)
    :name (get status-present-datomic :status/name)})
+
+(defn- status-to-update-view
+  []
+  {:id (get status-to-update-datomic :status/id)
+   :name (get status-to-update-datomic :status/name)})
+
+(defn- status-to-delete-view
+  []
+  {:id (get status-to-delete-datomic :status/id)
+   :name (get status-to-delete-datomic :status/name)})
 
 (defn- id-as-string
   [entity id-ks]
@@ -100,3 +118,49 @@
           expected-resp {:message "Field :name is not present. "}]
       (is (= 400 (:status actual-resp)))
       (is (= (map-as-json expected-resp) (:body actual-resp))))))
+
+(deftest patch-status
+  (testing "patch with mandatory params works"
+    (let [new-name "preparing"
+          new-status (assoc (status-to-update-view) :name new-name)
+          actual-resp (p.test/response-for (:core @test-server)
+                                           :patch "/status"
+                                           :headers json-header
+                                           :body (map-as-json new-status))
+          id (:id (status-to-update-view))
+          conn (db.config/connect!)
+          status-in-db (db.entity/find-by-id conn :status/id id)]
+      (is (= 204 (:status actual-resp)))
+      (is (= (:status/name status-in-db) new-name))))
+  (testing "insert with missing mandatory params gives 400"
+    (let [actual-resp (p.test/response-for (:core @test-server)
+                                           :patch "/status"
+                                           :headers json-header
+                                           :body "")
+          expected-resp {:message "Field :id is not present. Field :name is not present. "}]
+      (is (= 400 (:status actual-resp)))
+      (is (= (map-as-json expected-resp) (:body actual-resp))))))
+
+(deftest delete-status
+  (testing "Deleting works"
+    (let [status-present-get-url (str "/status/"
+                                      (id-as-string
+                                        status-to-delete-datomic
+                                        :status/id))
+          actual-resp (p.test/response-for (:core @test-server) :delete status-present-get-url)
+          conn (db.config/connect!)
+          id (:id (status-to-delete-view))
+          status-in-db (db.entity/find-by-id conn :status/id id)]
+      (is (= 204 (:status actual-resp)))
+      (is (not status-in-db))))
+
+  (testing "non uuid gives 204"
+    (let [status-present-get-url "/status/39384"
+          actual-resp (p.test/response-for (:core @test-server) :delete status-present-get-url)]
+      (is (= 204 (:status actual-resp)))))
+
+  (testing "not present uuid gives 204"
+    (let [status-present-get-url (str "/status/" (m.utils/uuid))
+          actual-resp (p.test/response-for (:core @test-server) :delete status-present-get-url)]
+      (is (= 204 (:status actual-resp)))))
+  )

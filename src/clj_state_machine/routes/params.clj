@@ -3,7 +3,8 @@
             [clj-state-machine.i18n.translations :as i.t]
             [clj-state-machine.config :as config]
             [clj-state-machine.controller.utils :as c.utils])
-  (:use clojure.pprint))
+  (:use clojure.pprint)
+  (:import (java.util UUID)))
 
 (defn validate-mandatory
   [request body fields]
@@ -23,12 +24,19 @@
                   ))
     ))
 
+(defn extract-field-value
+  [field body]
+  (let [value (field body)
+        is-uuid (c.utils/is-uuid value)]
+    (cond is-uuid (UUID/fromString value)
+          :else value)))
+
 (defn mop-fields
   [body fields]
   (let [fields (concat [{}] (map #(keyword %) fields))
         cleaned (reduce (fn [map field]
                           (let [has-field? (contains? body field)
-                                value (field body)]
+                                value (extract-field-value field body)]
                             (if has-field? (assoc map field value)
                               map)))
                         fields)]

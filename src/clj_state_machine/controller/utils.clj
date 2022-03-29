@@ -72,4 +72,5 @@
 
 (defn is-uuid
   [id]
-  (re-matches uuid-pattern id))
+  (cond (string? id) (re-matches uuid-pattern id)
+        :else false))

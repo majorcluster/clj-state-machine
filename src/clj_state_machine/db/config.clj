@@ -21,8 +21,9 @@
   (d/transact conn (get-schema)))
 
 (defn erase-db!
-  "tet use only!!!"
+  "test use only!!!"
   []
+  (println "ERASING DB!!!!!!!")
   (d/delete-database db-uri))
 
 (defn reset-db!
