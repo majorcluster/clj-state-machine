@@ -1,25 +1,43 @@
 # clj-state-machine
 
-A Clojure library designed to ... well, that part is up to you.
+### A clojure pedestal service designed to be an example of a simple web clojure project. Having tests, a simple crud, datomic integration
 
-## Usage
+The whole setup for unit and integration tests are done and working
+
+The db.entity file contains useful methods, nominally:
+* find-by-id => for any entity finding it by id, not pulling refs
+* upsert! => doing either insert or update based on find-by-id, 
+it is concurrency proof with :db/cas for updates
+
+controller.utils contains useful methods:
+* redefine-keys => to replace {:id something} to {:status/id something} 
+to match datomic usage
+* undefine-keys to replace datomic keyword pattern, removing the entity
+as prefix
+* methods to build messages replacing values
+* is-uuid to check if string matches an uuid pattern
+
+routes.params has also handy methods:
+* validate-and-mop => based on 2 arrays (mandatory & allowed) it validates
+if request has mandatory params, then removes from map the unwanted attrs
+avoiding any unwanted data being forwarded, 
+uuid strings are right way converted to #uuid
+
+## Setup
+* Install local datomic / configure cloud one and get connection info to bring
+* Run datomic (if local)
+* Install dependencies
+* Copy and paste .profiles.clj without the "." at the beginning
+* Configure it with test and dev connection info
+
+## Usages
 
 start dev server:
 ```shell
-lein auto run
+lein run
 ```
 
-## License
-
-Copyright © 2022 FIXME
-
-This program and the accompanying materials are made available under the
-terms of the Eclipse Public License 2.0 which is available at
-http://www.eclipse.org/legal/epl-2.0.
-
-This Source Code may also be made available under the following Secondary
-Licenses when the conditions for such availability set forth in the Eclipse
-Public License, v. 2.0 are satisfied: GNU General Public License as published by
-the Free Software Foundation, either version 2 of the License, or (at your
-option) any later version, with the GNU Classpath Exception which is available
-at https://www.gnu.org/software/classpath/license.html.
+test:
+```shell
+lein test
+```
