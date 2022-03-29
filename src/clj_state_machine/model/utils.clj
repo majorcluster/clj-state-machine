@@ -1,5 +1,10 @@
-(ns clj-state-machine.model.utils)
+(ns clj-state-machine.model.utils
+  (:import (java.util UUID)))
 
 (defn uuid
   []
-  (java.util.UUID/randomUUID))
+  (UUID/randomUUID))
+
+(defn uuid-as-string
+  [uuid]
+  (.toString uuid))

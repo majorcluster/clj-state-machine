@@ -1,20 +1,18 @@
 (ns clj-state-machine.db.config
   (:require [datomic.api :as d]
+            [environ.core :refer [env]]
             [clj-state-machine.db.utils :as db.utils]
             [clj-state-machine.model.status :as model.status])
   (:use clojure.pprint))
 
-;TODO extract to some env variables
-(defn db-uri
-  []
-  "datomic:dev://localhost:4334/clj-state-machine-local")
+(def db-uri
+  (env :database-url))
 
 (defn connect! []
-  (d/create-database (db-uri))
-  (d/connect (db-uri)))
+  (d/create-database db-uri)
+  (d/connect db-uri))
 
 (defn get-schema []
-  (println "GET SCHEMA")
   (pprint (reduce conj [] (db.utils/schema-to-datomic (model.status/StatusDef))))
   (reduce conj [] (db.utils/schema-to-datomic (model.status/StatusDef))))
 

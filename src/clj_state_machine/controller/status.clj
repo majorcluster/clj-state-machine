@@ -15,6 +15,15 @@
                        (c.utils/undefine-entity-keys "status"))
           :else nil)))
 
-(defn insert-facade
+(defn upsert-facade
   [status]
-  (db.status/upsert! (c.utils/redefine-entity-keys "status" status)))
+  (let [id-from-upsert (db.status/upsert! (c.utils/redefine-entity-keys "status" status))]
+    {:status 200
+     :headers c.utils/headers
+     :body {:message ""
+            :payload {:id id-from-upsert}}}))
+
+(defn delete-facade
+  [language id]
+  (db.status/delete! id)
+  {:status 204})

@@ -17,8 +17,7 @@
                  :headers c.utils/headers
                  :body {:message ""
                         :payload found}}
-          :else (c.utils/not-found-message language "status" "id") ))
-  )
+          :else (c.utils/not-found-message language "status" "id") )))
 
 (defn post-status
   [request]
@@ -27,8 +26,27 @@
           mandatory-fields ["name"]
           allowed-fields ["name"]
           body (r.params/validate-and-mop request crude-body mandatory-fields allowed-fields)]
-      (c.status/insert-facade body)
+      (c.status/upsert-facade body))
+    (catch ExceptionInfo e
+      (r.utils/message-catch request e))
+    ))
+
+(defn patch-status
+  [request]
+  (try
+    (let [crude-body (:json-params request)
+          mandatory-fields ["id","name"]
+          allowed-fields ["id","name"]
+          body (r.params/validate-and-mop request crude-body mandatory-fields allowed-fields)]
+      (c.status/upsert-facade body)
       {:status 204})
     (catch ExceptionInfo e
       (r.utils/message-catch request e))
     ))
+
+(defn delete-status
+  [request]
+  (let [params (get request :path-params)
+        language (config/get-language request)
+        id (get params :status-id)]
+    (c.status/delete-facade language id)))

@@ -20,7 +20,6 @@
 
 (defn find-by-id
   [conn id-ks id]
-  (println "id" id)
   (let [db (d/db conn)
         q '[:find (pull ?e [*]) .
             :in $ ?id-ks ?id

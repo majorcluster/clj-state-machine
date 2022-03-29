@@ -11,7 +11,7 @@
 
 (def common-messages
   {:bad-format {:status 400 :headers headers :body {:message ""}}
-   :not-found {:status 400 :headers headers :body {:message ""}}
+   :not-found {:status 404 :headers headers :body {:message ""}}
    :none {:status 500 :headers headers :body {:message ""}}})
 
 (def uuid-pattern

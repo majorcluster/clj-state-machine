@@ -11,4 +11,6 @@
 (def all-routes
   (route/expand-routes
     #{["/status/:status-id" :get (conj common-interceptors `r.status/get-status) :route-name :get-status]
-      ["/status" :post (conj common-interceptors `r.status/post-status) :route-name :post-status]}))
+      ["/status" :post (conj common-interceptors `r.status/post-status) :route-name :post-status]
+      ["/status" :patch (conj common-interceptors `r.status/patch-status) :route-name :patch-status]
+      ["/status/:status-id" :delete (conj common-interceptors `r.status/delete-status) :route-name :delete-status]}))
