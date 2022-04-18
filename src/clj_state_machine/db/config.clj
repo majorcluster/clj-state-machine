@@ -2,7 +2,8 @@
   (:require [datomic.api :as d]
             [environ.core :refer [env]]
             [clj-state-machine.db.utils :as db.utils]
-            [clj-state-machine.model.status :as model.status])
+            [clj-state-machine.model.status :as model.status]
+            [clj-state-machine.model.workflow :as model.workflow])
   (:use clojure.pprint))
 
 (def db-uri
@@ -13,8 +14,10 @@
   (d/connect db-uri))
 
 (defn get-schema []
-  (pprint (reduce conj [] (db.utils/schema-to-datomic (model.status/StatusDef))))
-  (reduce conj [] (db.utils/schema-to-datomic (model.status/StatusDef))))
+  (let [datomic-schemas (db.utils/schemas-to-datomic [(model.status/StatusDef)
+                                                      (model.workflow/WorkflowDef)])]
+    (pprint datomic-schemas)
+    datomic-schemas))
 
 (defn create-schema!
   [conn]

@@ -250,7 +250,14 @@
   (testing "MangoProducer schema to datomic works?"
     (is (= (schema-to-datomic (MangoProducerDef) {:indexed [:mango-producer/average-mangoes]
                                                   :historyless [:mango-producer/produces-other-goods?]})
-           (MangoProducerDatomicDef)))
-    ))
+           (MangoProducerDatomicDef)))))
+
+(deftest schemas-to-datomic-test
+  (testing "MangoCooperative and MangoProducer are converted together"
+    (is (= (concat (MangoCooperativeDatomicDef) (MangoProducerDatomicDef))
+            (schemas-to-datomic [(MangoCooperativeDef),(MangoProducerDef)]
+                                {:components [:mango-cooperative/producers]
+                                 :indexed [:mango-producer/average-mangoes]
+                                 :historyless [:mango-producer/produces-other-goods?]})))))
 
 

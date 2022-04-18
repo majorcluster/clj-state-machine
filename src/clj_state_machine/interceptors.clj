@@ -9,4 +9,5 @@
            body             (get response :body)
            updated-response (assoc response
                               :body (json/write-str body))]
+       (println "updated-response" updated-response)
        (assoc context :response updated-response)))})

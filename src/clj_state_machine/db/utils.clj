@@ -91,3 +91,15 @@
                   ))))
   ([definition]
     (schema-to-datomic definition {})))
+
+(defn schemas-to-datomic
+  "converts a col of definitions into datomic schema"
+  ([definitions configs]
+    (reduce (fn [col definition]
+              (let [converted (schema-to-datomic definition configs)]
+                (println "converted" converted)
+                (concat col converted)))
+            []
+            definitions))
+  ([definitions]
+   (schemas-to-datomic definitions {})))
