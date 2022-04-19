@@ -6,9 +6,7 @@
             [clj-state-machine.db.entity :as db.entity]
             [clj-state-machine.db.config :as db.config]
             [clj-state-machine.model.utils :as m.utils]
-            [clj-state-machine.model.utils :as m.utils]
-            [clojure.data.json :as json]
-            [clojure.test.check.generators :as gen])
+            [clojure.set :as cset])
   (:use clojure.pprint)
   (:import (java.util UUID)))
 
@@ -22,29 +20,29 @@
   {:workflow/id (m.utils/uuid)
    :workflow/name "stucked"})
 
+(def workflow-finished-present-datomic
+  {:workflow/id (m.utils/uuid)
+   :workflow/name "finished"})
+
 (def workflow-to-delete-datomic
   {:workflow/id (m.utils/uuid)
    :workflow/name "delete-me"})
-
-(def base-message
-  {:message ""
-   :payload {}})
-
-(def json-header
-  {"Content-Type" "application/json"})
-
-(defn- map-as-json
-  [map]
-  (json/write-str map))
-
-(defn- json-as-map
-  [json-str]
-  (json/read-str json-str :key-fn keyword))
 
 (defn- workflow-present-view
   []
   {:id (get workflow-present-datomic :workflow/id)
    :name (get workflow-present-datomic :workflow/name)})
+
+(defn- all-workflows-view
+  []
+  [{:id (-> workflow-present-datomic
+            :workflow/id
+            (m.utils/uuid-as-string))
+    :name (get workflow-present-datomic :workflow/name)}
+   {:id (-> workflow-finished-present-datomic
+            :workflow/id
+            (m.utils/uuid-as-string))
+    :name (get workflow-finished-present-datomic :workflow/name)}])
 
 (defn- workflow-to-update-view
   []
@@ -56,14 +54,9 @@
   {:id (get workflow-to-delete-datomic :workflow/id)
    :name (get workflow-to-delete-datomic :workflow/name)})
 
-(defn- id-as-string
-  [entity id-ks]
-  (-> entity
-      id-ks
-      (m.utils/uuid-as-string)))
-
 (defn- insert-test-data []
-  (db.workflow/upsert! workflow-present-datomic))
+  (db.workflow/upsert! workflow-present-datomic)
+  (db.workflow/upsert! workflow-finished-present-datomic))
 
 (insert-test-data)
 
@@ -90,7 +83,16 @@
           workflow-present-get-url (str "/workflow/" (m.utils/uuid))
           actual-resp (p.test/response-for (:core @test-server) :get workflow-present-get-url)]
       (is (= (map-as-json expected-resp) (:body actual-resp)))
-      (is (= 404 (:status actual-resp))))))
+      (is (= 404 (:status actual-resp)))))
+
+  (testing "When no id is sent all workflows are returned"
+    (let [actual-resp (p.test/response-for (:core @test-server) :get "/workflow")
+          body-map (->> actual-resp
+                        :body
+                        (json-as-map)
+                        :payload)]
+      (is (cset/subset? (set (all-workflows-view)) (set body-map)))
+      (is (= 200 (:status actual-resp))))))
 
 (deftest post-workflow
   (testing "insert with mandatory params works"

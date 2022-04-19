@@ -8,10 +8,14 @@
 
 (defn get-facade
   [id]
-  (let [is-uuid (c.utils/is-uuid id)]
-    (cond is-uuid (->> id
+  (let [no-id? (nil? id)
+        conn (db.config/connect!)
+        is-uuid? (c.utils/is-uuid id)]
+    (cond no-id? (->> (db.entity/find-all conn :status/id)
+                      (c.utils/undefine-entity-keys "status"))
+          is-uuid? (->> id
                        UUID/fromString
-                       (db.entity/find-by-id (db.config/connect!) :status/id)
+                       (db.entity/find-by-id conn :status/id)
                        (c.utils/undefine-entity-keys "status"))
           :else nil)))
 

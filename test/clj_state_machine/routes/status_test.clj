@@ -6,9 +6,8 @@
             [clj-state-machine.db.entity :as db.entity]
             [clj-state-machine.db.config :as db.config]
             [clj-state-machine.model.utils :as m.utils]
-            [clj-state-machine.model.utils :as m.utils]
-            [clojure.data.json :as json]
-            [clojure.test.check.generators :as gen])
+            [clojure.set :as cset]
+            [matcher-combinators.test])
   (:use clojure.pprint)
   (:import (java.util UUID)))
 
@@ -18,6 +17,10 @@
   {:status/id (m.utils/uuid)
    :status/name "on-progress"})
 
+(def status-finished-present-datomic
+  {:status/id (m.utils/uuid)
+   :status/name "finished"})
+
 (def status-to-update-datomic
   {:status/id (m.utils/uuid)
    :status/name "stucked"})
@@ -26,25 +29,21 @@
   {:status/id (m.utils/uuid)
    :status/name "delete-me"})
 
-(def base-message
-  {:message ""
-   :payload {}})
-
-(def json-header
-  {"Content-Type" "application/json"})
-
-(defn- map-as-json
-  [map]
-  (json/write-str map))
-
-(defn- json-as-map
-  [json-str]
-  (json/read-str json-str :key-fn keyword))
-
 (defn- status-present-view
   []
   {:id (get status-present-datomic :status/id)
    :name (get status-present-datomic :status/name)})
+
+(defn- all-statuses-view
+  []
+  [{:id (-> status-present-datomic
+            :status/id
+            (m.utils/uuid-as-string))
+   :name (get status-present-datomic :status/name)}
+   {:id (-> status-finished-present-datomic
+            :status/id
+            (m.utils/uuid-as-string))
+    :name (get status-finished-present-datomic :status/name)}])
 
 (defn- status-to-update-view
   []
@@ -56,14 +55,9 @@
   {:id (get status-to-delete-datomic :status/id)
    :name (get status-to-delete-datomic :status/name)})
 
-(defn- id-as-string
-  [entity id-ks]
-  (-> entity
-      id-ks
-      (m.utils/uuid-as-string)))
-
 (defn- insert-test-data []
-  (db.status/upsert! status-present-datomic))
+  (db.status/upsert! status-present-datomic)
+  (db.status/upsert! status-finished-present-datomic))
 
 (insert-test-data)
 
@@ -76,6 +70,15 @@
                                         :status/id))
           actual-resp (p.test/response-for (:core @test-server) :get status-present-get-url)]
       (is (= (map-as-json expected-resp) (:body actual-resp)))
+      (is (= 200 (:status actual-resp)))))
+
+  (testing "When no id is sent all statuses are returned"
+    (let [actual-resp (p.test/response-for (:core @test-server) :get "/status")
+          body-map (->> actual-resp
+                        :body
+                        (json-as-map)
+                        :payload)]
+      (is (cset/subset? (set (all-statuses-view)) (set body-map)))
       (is (= 200 (:status actual-resp)))))
 
   (testing "non uuid gives not found"

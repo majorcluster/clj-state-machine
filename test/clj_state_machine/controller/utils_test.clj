@@ -49,4 +49,18 @@
     (is (= {:status/id 12 :status/name "name"}
            (undefine-entity-keys "test" {:status/id 12 :status/name "name"})))
     (is (= {}
-           (undefine-entity-keys "status" {})))))
+           (undefine-entity-keys "status" {}))))
+  (testing "col has keys undefined"
+    (is (= [{:id 12 :name "name"},{:name "second"}]
+           (undefine-entity-keys "status" [{:status/id 12 :status/name "name"},{:status/name "second"}])))
+    (is (= [{:id 18888 :name "chapolin"}]
+           (undefine-entity-keys "status" [{:status/id 18888 :status/name "chapolin"}])))
+    (is (= [{:status/id 18888 :status/name "chapolin"}]
+           (undefine-entity-keys "test" [{:status/id 18888 :status/name "chapolin"}]))))
+  (testing "for other var types return params themselves"
+    (is (= [1]
+           (undefine-entity-keys "status" [1])))
+    (is (= 1
+           (undefine-entity-keys "status" 1)))
+    (is (= ""
+           (undefine-entity-keys "status" "")))))

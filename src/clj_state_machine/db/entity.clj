@@ -28,6 +28,16 @@
           (d/q q db id-ks)
           (transform-out))))
 
+(defn find-all
+  [conn id-ks]
+  (let [db (d/db conn)
+        q '[:find [(pull ?e [*]) ...]
+            :in $ ?id-ks
+            :where [?e ?id-ks]]]
+    (->> id-ks
+         (d/q q db)
+         (transform-out))))
+
 (defn update!
         [conn
          id-ks

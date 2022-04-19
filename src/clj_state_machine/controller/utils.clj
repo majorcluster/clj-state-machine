@@ -53,16 +53,23 @@
 
 (defn undefine-entity-keys
   [entity-name entity]
-  (let [route-keys (keys entity)
-        to-reduce-keys (concat [{}] route-keys)
-        renamed-keys (reduce (fn [map key]
-                               (let [key-string (str key)
-                                     entity-str-search (str ":" entity-name "/")
-                                     new-key-name (cstring/replace key-string (re-pattern entity-str-search) "")
-                                     new-key-name (cstring/replace new-key-name (re-pattern ":") "")]
-                                 (assoc map key (keyword new-key-name))))
-                             to-reduce-keys)]
-    (cset/rename-keys entity renamed-keys)))
+  (cond (map? entity) (let [route-keys (keys entity)
+                            to-reduce-keys (concat [{}] route-keys)
+                            renamed-keys (reduce (fn [map key]
+                                                   (let [key-string (str key)
+                                                         entity-str-search (str ":" entity-name "/")
+                                                         new-key-name (cstring/replace key-string (re-pattern entity-str-search) "")
+                                                         new-key-name (cstring/replace new-key-name (re-pattern ":") "")]
+                                                     (assoc map key (keyword new-key-name))))
+                                                 to-reduce-keys)]
+                        (cset/rename-keys entity renamed-keys))
+        (vector? entity) (reduce (fn [col entity]
+                                (let [undefined (undefine-entity-keys entity-name entity)]
+                                  (conj col undefined)))
+                              []
+                              entity)
+        :else entity)
+  )
 
 (defn not-found-message
   [language entity-name search-field-name]

@@ -12,10 +12,12 @@
 (def all-routes
   (route/expand-routes
     #{["/status/:status-id" :get (conj common-interceptors `r.status/get-status) :route-name :get-status]
+      ["/status" :get (conj common-interceptors `r.status/get-status) :route-name :get-all-status]
       ["/status" :post (conj common-interceptors `r.status/post-status) :route-name :post-status]
       ["/status" :patch (conj common-interceptors `r.status/patch-status) :route-name :patch-status]
       ["/status/:status-id" :delete (conj common-interceptors `r.status/delete-status) :route-name :delete-status]
       ["/workflow/:workflow-id" :get (conj common-interceptors `r.workflow/get-workflow) :route-name :get-workflow]
+      ["/workflow" :get (conj common-interceptors `r.workflow/get-workflow) :route-name :get-all-workflow]
       ["/workflow" :post (conj common-interceptors `r.workflow/post-workflow) :route-name :post-workflow]
       ["/workflow" :patch (conj common-interceptors `r.workflow/patch-workflow) :route-name :patch-workflow]
       ["/workflow/:workflow-id" :delete (conj common-interceptors `r.workflow/delete-workflow) :route-name :delete-workflow]}))

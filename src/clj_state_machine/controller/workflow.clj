@@ -8,11 +8,15 @@
 
 (defn get-facade
   [id]
-  (let [is-uuid (c.utils/is-uuid id)]
-    (cond is-uuid (->> id
-                       UUID/fromString
-                       (db.entity/find-by-id (db.config/connect!) :workflow/id)
-                       (c.utils/undefine-entity-keys "workflow"))
+  (let [no-id? (nil? id)
+        conn (db.config/connect!)
+        is-uuid? (c.utils/is-uuid id)]
+    (cond no-id? (->> (db.entity/find-all conn :workflow/id)
+                      (c.utils/undefine-entity-keys "workflow"))
+          is-uuid? (->> id
+                        UUID/fromString
+                        (db.entity/find-by-id conn :workflow/id)
+                        (c.utils/undefine-entity-keys "workflow"))
           :else nil)))
 
 (defn upsert-facade
