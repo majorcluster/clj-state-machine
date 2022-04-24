@@ -3,11 +3,11 @@
             [integration_core :refer :all]
             [io.pedestal.test :as p.test]
             [clj-state-machine.db.status :as db.status]
-            [clj-state-machine.db.entity :as db.entity]
             [clj-state-machine.db.config :as db.config]
             [clojure.set :as cset]
             [matcher-combinators.test]
-            [pedestal-api-helper.params-helper :as p-helper])
+            [pedestal-api-helper.params-helper :as p-helper]
+            [datomic-helper.entity :as dh.entity])
   (:use clojure.pprint)
   (:import (java.util UUID)))
 
@@ -108,7 +108,7 @@
           id-gotten (get-in body-as-map [:payload :id] 0)
           id-gotten-as-uuid (UUID/fromString id-gotten)
           conn (db.config/connect!)
-          status-in-db (db.entity/find-by-id conn :status/id id-gotten-as-uuid)]
+          status-in-db (dh.entity/find-by-id conn :status/id id-gotten-as-uuid)]
       (is (not (= 0 id-gotten)))
       (is (= 200 (:status actual-resp)))
       (is (= (:status/id status-in-db)
@@ -132,7 +132,7 @@
                                            :body (map-as-json new-status))
           id (:id (status-to-update-view))
           conn (db.config/connect!)
-          status-in-db (db.entity/find-by-id conn :status/id id)]
+          status-in-db (dh.entity/find-by-id conn :status/id id)]
       (is (= 204 (:status actual-resp)))
       (is (= (:status/name status-in-db) new-name))))
   (testing "insert with missing mandatory params gives 400"
@@ -154,7 +154,7 @@
           actual-resp (p.test/response-for (:core @test-server) :delete status-present-get-url)
           conn (db.config/connect!)
           id (:id (status-to-delete-view))
-          status-in-db (db.entity/find-by-id conn :status/id id)]
+          status-in-db (dh.entity/find-by-id conn :status/id id)]
       (is (= 204 (:status actual-resp)))
       (is (not status-in-db))))
 

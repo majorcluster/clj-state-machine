@@ -3,10 +3,10 @@
             [integration_core :refer :all]
             [io.pedestal.test :as p.test]
             [clj-state-machine.db.workflow :as db.workflow]
-            [clj-state-machine.db.entity :as db.entity]
             [clj-state-machine.db.config :as db.config]
             [clojure.set :as cset]
-            [pedestal-api-helper.params-helper :as p-helper])
+            [pedestal-api-helper.params-helper :as p-helper]
+            [datomic-helper.entity :as dh.entity])
   (:use clojure.pprint)
   (:import (java.util UUID)))
 
@@ -107,7 +107,7 @@
           id-gotten (get-in body-as-map [:payload :id] 0)
           id-gotten-as-uuid (UUID/fromString id-gotten)
           conn (db.config/connect!)
-          workflow-in-db (db.entity/find-by-id conn :workflow/id id-gotten-as-uuid)]
+          workflow-in-db (dh.entity/find-by-id conn :workflow/id id-gotten-as-uuid)]
       (is (not (= 0 id-gotten)))
       (is (= 200 (:status actual-resp)))
       (is (= (:workflow/id workflow-in-db)
@@ -132,7 +132,7 @@
                                            :body (map-as-json new-workflow))
           id (:id (workflow-to-update-view))
           conn (db.config/connect!)
-          workflow-in-db (db.entity/find-by-id conn :workflow/id id)]
+          workflow-in-db (dh.entity/find-by-id conn :workflow/id id)]
       (is (= 204 (:status actual-resp)))
       (is (= (:workflow/name workflow-in-db) new-name))))
   (testing "insert with missing mandatory params gives 400"
@@ -154,7 +154,7 @@
           actual-resp (p.test/response-for (:core @test-server) :delete workflow-present-get-url)
           conn (db.config/connect!)
           id (:id (workflow-to-delete-view))
-          workflow-in-db (db.entity/find-by-id conn :workflow/id id)]
+          workflow-in-db (dh.entity/find-by-id conn :workflow/id id)]
       (is (= 204 (:status actual-resp)))
       (is (not workflow-in-db))))
 

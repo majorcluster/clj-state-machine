@@ -1,7 +1,5 @@
 (defproject clj-state-machine "0.1.0-SNAPSHOT"
   :description "Clojure state machine microservice"
-  :repositories [["my.datomic.com" {:url "https://my.datomic.com/repo"
-                                    :creds :gpg}]]
   :dependencies [[org.clojure/clojure "1.10.1"]
                  [io.pedestal/pedestal.service "0.5.7"]
                  [io.pedestal/pedestal.route "0.5.7"]
@@ -10,8 +8,9 @@
                  [org.slf4j/slf4j-simple "1.7.28"]
                  [org.clojure/data.json "2.4.0"]
                  [prismatic/schema "1.1.12"]
-                 [com.datomic/datomic-pro "1.0.6362"]
+                 [com.datomic/datomic-free "0.9.5697"]
                  [org.clojars.majorcluster/pedestal-api-helper "0.3.1"]
+                 [org.clojars.majorcluster/datomic-helper "0.1.0"]
                  [prismatic/schema-generators "0.1.3"]
                  [nubank/matcher-combinators "3.3.1"]
                  [org.clojure/test.check "0.10.0-alpha3"]]

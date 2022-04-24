@@ -1,9 +1,9 @@
 (ns clj-state-machine.controller.workflow
   (:require [clj-state-machine.controller.utils :as c.utils]
-            [clj-state-machine.db.entity :as db.entity]
             [clj-state-machine.db.config :as db.config]
             [clj-state-machine.db.workflow :as db.workflow]
-            [pedestal-api-helper.params-helper :as p-helper])
+            [pedestal-api-helper.params-helper :as p-helper]
+            [datomic-helper.entity :as dh.entity])
   (:use clojure.pprint)
   (:import (java.util UUID)))
 
@@ -12,11 +12,11 @@
   (let [no-id? (nil? id)
         conn (db.config/connect!)
         is-uuid? (p-helper/is-uuid id)]
-    (cond no-id? (->> (db.entity/find-all conn :workflow/id)
+    (cond no-id? (->> (dh.entity/find-all conn :workflow/id)
                       (c.utils/undefine-entity-keys "workflow"))
           is-uuid? (->> id
                         UUID/fromString
-                        (db.entity/find-by-id conn :workflow/id)
+                        (dh.entity/find-by-id conn :workflow/id)
                         (c.utils/undefine-entity-keys "workflow"))
           :else nil)))
 
@@ -29,6 +29,6 @@
             :payload {:id id-from-upsert}}}))
 
 (defn delete-facade
-  [language id]
+  [_ id]
   (db.workflow/delete! id)
   {:status 204})

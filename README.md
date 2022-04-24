@@ -4,28 +4,18 @@
 
 The whole setup for unit and integration tests are done and working
 
-The db.entity file contains useful methods, nominally:
-* find-by-id => for any entity finding it by id, not pulling refs
-* upsert! => doing either insert or update based on find-by-id, 
-it is concurrency proof with :db/cas for updates
-
 controller.utils contains useful methods:
 * redefine-keys => to replace {:id something} to {:status/id something} 
 to match datomic usage
 * undefine-keys to replace datomic keyword pattern, removing the entity
 as prefix
 * methods to build messages replacing values
-* is-uuid to check if string matches an uuid pattern
-
-routes.params has also handy methods:
-* validate-and-mop => based on 2 arrays (mandatory & allowed) it validates
-if request has mandatory params, then removes from map the unwanted attrs
-avoiding any unwanted data being forwarded, 
-uuid strings are right way converted to #uuid
 
 ## Setup
-* Install local datomic / configure cloud one and get connection info to bring
-* Run datomic (if local)
+* Install and run local free-datomic:
+```shell
+docker run -d -e ADMIN_PASSWORD="admin" -e DATOMIC_PASSWORD="datomic" -p 4334-4336:4334-4336 --name datomic-free akiel/datomic-free
+```
 * Install dependencies
 * Copy and paste .profiles.clj without the "." at the beginning
 * Configure it with test and dev connection info
