@@ -3,11 +3,11 @@
             [clj-state-machine.routes.status :as r.status]
             [clj-state-machine.routes.workflow :as r.workflow]
             [io.pedestal.http.body-params :as p.body-params]
-            [clj-state-machine.interceptors :as interceptors]))
+            [pedestal-api-helper.interceptors :as api-h.i]))
 
 (def common-interceptors
   [(p.body-params/body-params)
-   interceptors/json-out])
+   api-h.i/json-out])
 
 (def all-routes
   (route/expand-routes

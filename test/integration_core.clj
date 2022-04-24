@@ -2,11 +2,9 @@
   (:require [clojure.test :refer :all]
             [clj-state-machine.core :as c.core]
             [clj-state-machine.db.config :as db.config]
-            [clj-state-machine.controller.utils :as c.utils]
-            [clj-state-machine.model.utils :as m.utils]
+            [pedestal-api-helper.params-helper :as p-helper]
             [clojure.data.json :as json])
-  (:use clojure.pprint)
-  (:import (java.util UUID)))
+  (:use clojure.pprint))
 
 (def test-server (atom {:core nil}))
 
@@ -37,4 +35,4 @@
   [entity id-ks]
   (-> entity
       id-ks
-      (m.utils/uuid-as-string)))
+      (p-helper/uuid-as-string)))

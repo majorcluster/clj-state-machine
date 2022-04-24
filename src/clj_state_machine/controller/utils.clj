@@ -24,11 +24,20 @@
         new-body (assoc body :message message)]
     (assoc complete-message :body new-body)))
 
+(defn common-with-validation-messages
+  [ks validation-messages]
+  (let [complete-message (ks common-messages)
+        body (:body complete-message)
+        new-body (assoc body :validation-messages validation-messages)]
+    (assoc complete-message :body new-body)))
+
 (defn format-message
-  [message & params]
-  (if (and message (.contains message "%s"))
-    (apply format message params)
-    message))
+  ([message]
+    message)
+  ([message & params]
+   (if (and message (.contains message "%s"))
+     (apply format message params)
+     message)))
 
 (defn common-with-custom-message-n-params
   [ks message & params]
@@ -77,7 +86,8 @@
         crude-translation (:not-found translations)]
     (common-with-custom-message-n-params :not-found crude-translation entity-name search-field-name)))
 
-(defn is-uuid
-  [id]
-  (cond (string? id) (re-matches uuid-pattern id)
-        :else false))
+(defn get-message
+  [language message_key & params]
+  (let [translations (language i.t/all)
+        crude-translation (message_key translations)]
+    (apply format-message crude-translation params)))

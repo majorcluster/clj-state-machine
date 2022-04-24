@@ -5,28 +5,28 @@
             [clj-state-machine.db.status :as db.status]
             [clj-state-machine.db.entity :as db.entity]
             [clj-state-machine.db.config :as db.config]
-            [clj-state-machine.model.utils :as m.utils]
             [clojure.set :as cset]
-            [matcher-combinators.test])
+            [matcher-combinators.test]
+            [pedestal-api-helper.params-helper :as p-helper])
   (:use clojure.pprint)
   (:import (java.util UUID)))
 
 (setup)
 
 (def status-present-datomic
-  {:status/id (m.utils/uuid)
+  {:status/id (p-helper/uuid)
    :status/name "on-progress"})
 
 (def status-finished-present-datomic
-  {:status/id (m.utils/uuid)
+  {:status/id (p-helper/uuid)
    :status/name "finished"})
 
 (def status-to-update-datomic
-  {:status/id (m.utils/uuid)
+  {:status/id (p-helper/uuid)
    :status/name "stucked"})
 
 (def status-to-delete-datomic
-  {:status/id (m.utils/uuid)
+  {:status/id (p-helper/uuid)
    :status/name "delete-me"})
 
 (defn- status-present-view
@@ -38,11 +38,11 @@
   []
   [{:id (-> status-present-datomic
             :status/id
-            (m.utils/uuid-as-string))
+            (p-helper/uuid-as-string))
    :name (get status-present-datomic :status/name)}
    {:id (-> status-finished-present-datomic
             :status/id
-            (m.utils/uuid-as-string))
+            (p-helper/uuid-as-string))
     :name (get status-finished-present-datomic :status/name)}])
 
 (defn- status-to-update-view
@@ -90,7 +90,7 @@
 
   (testing "not present uuid gives not found"
     (let [expected-resp {:message "status was not found with given id"}
-          status-present-get-url (str "/status/" (m.utils/uuid))
+          status-present-get-url (str "/status/" (p-helper/uuid))
           actual-resp (p.test/response-for (:core @test-server) :get status-present-get-url)]
       (is (= (map-as-json expected-resp) (:body actual-resp)))
       (is (= 404 (:status actual-resp))))))
@@ -118,7 +118,7 @@
                                            :post "/status"
                                            :headers json-header
                                            :body "")
-          expected-resp {:message "Field :name is not present. "}]
+          expected-resp {:message "", :validation-messages [{:field "name" :message "Field :name is not present"}]}]
       (is (= 400 (:status actual-resp)))
       (is (= (map-as-json expected-resp) (:body actual-resp))))))
 
@@ -140,7 +140,8 @@
                                            :patch "/status"
                                            :headers json-header
                                            :body "")
-          expected-resp {:message "Field :id is not present. Field :name is not present. "}]
+          expected-resp {:message "", :validation-messages [{:field "id" :message "Field :id is not present"}
+                                                            {:field "name" :message "Field :name is not present"}]}]
       (is (= 400 (:status actual-resp)))
       (is (= (map-as-json expected-resp) (:body actual-resp))))))
 
@@ -163,7 +164,7 @@
       (is (= 204 (:status actual-resp)))))
 
   (testing "not present uuid gives 204"
-    (let [status-present-get-url (str "/status/" (m.utils/uuid))
+    (let [status-present-get-url (str "/status/" (p-helper/uuid))
           actual-resp (p.test/response-for (:core @test-server) :delete status-present-get-url)]
       (is (= 204 (:status actual-resp)))))
   )

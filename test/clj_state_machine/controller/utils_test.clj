@@ -12,6 +12,15 @@
     (is (= {:status 400 :headers headers :body {:message nil}}
            (common-with-custom-message :bad-format nil)))))
 
+(deftest common-with-validation-messages-test
+  (testing "existing message will have a custom text"
+    (is (= {:status 400 :headers headers :body {:message "", :validation-messages [:field "age" :message "Field :age is not present"]}}
+           (common-with-validation-messages :bad-format [:field "age" :message "Field :age is not present"])))
+    (is (= {:status 400 :headers headers :body {:message "", :validation-messages nil}}
+           (common-with-validation-messages :bad-format nil)))
+    (is (= {:status 400 :headers headers :body {:message "", :validation-messages []}}
+           (common-with-validation-messages :bad-format [])))))
+
 (deftest common-with-custom-messages-params-test
   (testing "existing message will have a text with replaced params"
     (is (= {:status 400 :headers headers :body {:message "custom param"}}
@@ -33,6 +42,16 @@
            (format-message "my message is %s and %s" "nice" "splendid")))
     (is (= "my message is nice"
            (format-message "my message is nice")))
+    ))
+
+(deftest get-message-test
+  (testing "text will be replaced"
+    (is (= "Something really odd is going on. Please retry later."
+           (get-message :en :fatal)))
+    (is (= "Field :name is not present"
+           (get-message :en :field-not-present :name)))
+    (is (= "Field %s is not present"
+           (get-message :en :field-not-present)))
     ))
 
 (deftest redefine-entity-keys-test

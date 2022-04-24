@@ -5,27 +5,27 @@
             [clj-state-machine.db.workflow :as db.workflow]
             [clj-state-machine.db.entity :as db.entity]
             [clj-state-machine.db.config :as db.config]
-            [clj-state-machine.model.utils :as m.utils]
-            [clojure.set :as cset])
+            [clojure.set :as cset]
+            [pedestal-api-helper.params-helper :as p-helper])
   (:use clojure.pprint)
   (:import (java.util UUID)))
 
 (setup)
 
 (def workflow-present-datomic
-  {:workflow/id (m.utils/uuid)
+  {:workflow/id (p-helper/uuid)
    :workflow/name "on-progress"})
 
 (def workflow-to-update-datomic
-  {:workflow/id (m.utils/uuid)
+  {:workflow/id (p-helper/uuid)
    :workflow/name "stucked"})
 
 (def workflow-finished-present-datomic
-  {:workflow/id (m.utils/uuid)
+  {:workflow/id (p-helper/uuid)
    :workflow/name "finished"})
 
 (def workflow-to-delete-datomic
-  {:workflow/id (m.utils/uuid)
+  {:workflow/id (p-helper/uuid)
    :workflow/name "delete-me"})
 
 (defn- workflow-present-view
@@ -37,11 +37,11 @@
   []
   [{:id (-> workflow-present-datomic
             :workflow/id
-            (m.utils/uuid-as-string))
+            (p-helper/uuid-as-string))
     :name (get workflow-present-datomic :workflow/name)}
    {:id (-> workflow-finished-present-datomic
             :workflow/id
-            (m.utils/uuid-as-string))
+            (p-helper/uuid-as-string))
     :name (get workflow-finished-present-datomic :workflow/name)}])
 
 (defn- workflow-to-update-view
@@ -80,7 +80,7 @@
 
   (testing "not present uuid gives not found"
     (let [expected-resp {:message "workflow was not found with given id"}
-          workflow-present-get-url (str "/workflow/" (m.utils/uuid))
+          workflow-present-get-url (str "/workflow/" (p-helper/uuid))
           actual-resp (p.test/response-for (:core @test-server) :get workflow-present-get-url)]
       (is (= (map-as-json expected-resp) (:body actual-resp)))
       (is (= 404 (:status actual-resp)))))
@@ -117,7 +117,8 @@
                                            :post "/workflow"
                                            :headers json-header
                                            :body "")
-          expected-resp {:message "Field :name is not present. "}]
+          expected-resp {:message "", :validation-messages [{:field "name"
+                                                              :message "Field :name is not present"}]}]
       (is (= 400 (:status actual-resp)))
       (is (= (map-as-json expected-resp) (:body actual-resp))))))
 
@@ -139,7 +140,8 @@
                                            :patch "/workflow"
                                            :headers json-header
                                            :body "")
-          expected-resp {:message "Field :id is not present. Field :name is not present. "}]
+          expected-resp {:message "", :validation-messages [{:field "id" :message "Field :id is not present"}
+                                                            {:field "name" :message "Field :name is not present"}]}]
       (is (= 400 (:status actual-resp)))
       (is (= (map-as-json expected-resp) (:body actual-resp))))))
 
@@ -162,7 +164,7 @@
       (is (= 204 (:status actual-resp)))))
 
   (testing "not present uuid gives 204"
-    (let [workflow-present-get-url (str "/workflow/" (m.utils/uuid))
+    (let [workflow-present-get-url (str "/workflow/" (p-helper/uuid))
           actual-resp (p.test/response-for (:core @test-server) :delete workflow-present-get-url)]
       (is (= 204 (:status actual-resp)))))
   )
