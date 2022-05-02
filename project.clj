@@ -10,7 +10,7 @@
                  [prismatic/schema "1.1.12"]
                  [com.datomic/datomic-free "0.9.5697"]
                  [org.clojars.majorcluster/pedestal-api-helper "0.3.1"]
-                 [org.clojars.majorcluster/datomic-helper "0.1.0"]
+                 [org.clojars.majorcluster/datomic-helper "0.2.6"]
                  [prismatic/schema-generators "0.1.3"]
                  [nubank/matcher-combinators "3.3.1"]
                  [org.clojure/test.check "0.10.0-alpha3"]]

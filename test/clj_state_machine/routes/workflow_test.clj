@@ -135,7 +135,7 @@
           workflow-in-db (dh.entity/find-by-id conn :workflow/id id)]
       (is (= 204 (:status actual-resp)))
       (is (= (:workflow/name workflow-in-db) new-name))))
-  (testing "insert with missing mandatory params gives 400"
+  (testing "patch with missing mandatory params gives 400"
     (let [actual-resp (p.test/response-for (:core @test-server)
                                            :patch "/workflow"
                                            :headers json-header

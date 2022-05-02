@@ -3,6 +3,7 @@
             [environ.core :refer [env]]
             [clj-state-machine.model.status :as model.status]
             [clj-state-machine.model.workflow :as model.workflow]
+            [clj-state-machine.model.transition :as model.transition]
             [datomic-helper.schema-transform :as dh.s-transform])
   (:use clojure.pprint))
 
@@ -15,7 +16,9 @@
 
 (defn get-schema []
   (let [datomic-schemas (dh.s-transform/schemas-to-datomic [(model.status/StatusDef)
-                                                      (model.workflow/WorkflowDef)])]
+                                                            (model.transition/TransitionDef)
+                                                            (model.workflow/WorkflowDef)]
+                                                            {:components [:workflow/transitions]})]
     (pprint datomic-schemas)
     datomic-schemas))
 

@@ -135,7 +135,7 @@
           status-in-db (dh.entity/find-by-id conn :status/id id)]
       (is (= 204 (:status actual-resp)))
       (is (= (:status/name status-in-db) new-name))))
-  (testing "insert with missing mandatory params gives 400"
+  (testing "patch with missing mandatory params gives 400"
     (let [actual-resp (p.test/response-for (:core @test-server)
                                            :patch "/status"
                                            :headers json-header
