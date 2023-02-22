@@ -1,0 +1,5 @@
+{
+ clj-state-machine.ports.datomic.core/db-host    "datomic:free://localhost:4334"
+ clj-state-machine.ports.datomic.core/db-name    "clj-state-machine"
+ clj-state-machine.configs/env                   "dev"
+ }

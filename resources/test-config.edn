@@ -1,0 +1,5 @@
+{
+ clj-state-machine.ports.datomic.core/db-host    "datomic:mem:/"
+ clj-state-machine.ports.datomic.core/db-name    "clj-state-machine"
+ clj-state-machine.configs/env                   "test"
+ }
