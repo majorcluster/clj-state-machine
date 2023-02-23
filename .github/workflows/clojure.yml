@@ -16,9 +16,9 @@ jobs:
     - uses: actions/checkout@v3
     - name: Runs DB container
       run: docker run -d -e ADMIN_PASSWORD="admin" -e DATOMIC_PASSWORD="datomic" -p 4334-4336:4334-4336 --name datomic-free akiel/datomic-free
-    - name: Setup profiles
-      run: cp .profiles.clj profiles.clj
     - name: Install dependencies
       run: lein deps
+    - name: Lint
+      run: lein lint
     - name: Run tests
-      run: lein test
+      run: lein with-profile test test
