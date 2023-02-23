@@ -9,6 +9,7 @@
                  :unresolved-symbol {:exclude [db-host
                                                db-name
                                                env]}
+                 :unresolved-var {:exclude [clj-state-machine.configs]}
                  :clojure-lsp/unused-public-var {:exclude-regex [".+\\.server/run-dev"]}}
  :config-in-ns {user {:linters {:unused-referred-var {:level :off}
                                 :unused-namespace {:level :off}

@@ -4,12 +4,12 @@
 
 (defn run-dev
   "The entry-point for 'lein run-dev'"
-  [& args]
+  [& _]
   (println "\nCreating your [DEV] server...")
   (ports.c/start-ports-dev))
 
 (defn -main
   "The entry-point for 'lein run'"
-  [& args]
+  [& _]
   (println "\nCreating your server...")
   (ports.c/start-ports))

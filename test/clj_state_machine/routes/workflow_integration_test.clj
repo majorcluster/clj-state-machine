@@ -3,11 +3,11 @@
             [clj-state-machine.ports.datomic.workflow :as datomic.workflow]
             [clojure.set :as cset]
             [clojure.test :refer :all]
-            [core-test :refer :all]
+            [core-test :refer [base-message id-as-string json-as-map
+                               json-header map-as-json service test-fixture]]
             [datomic-helper.entity :as dh.entity]
             [io.pedestal.test :as p.test]
             [pedestal-api-helper.params-helper :as p-helper])
-  (:use clojure.pprint)
   (:import (java.util UUID)))
 
 (use-fixtures :each test-fixture)
@@ -63,9 +63,9 @@
   (testing "Already present workflow is gotten"
     (let [expected-resp (assoc base-message :payload (workflow-present-view))
           workflow-present-get-url (str "/workflow/"
-                                      (id-as-string
-                                        workflow-present-datomic
-                                        :workflow/id))
+                                        (id-as-string
+                                         workflow-present-datomic
+                                         :workflow/id))
           actual-resp (p.test/response-for service :get workflow-present-get-url)]
       (is (= (map-as-json expected-resp) (:body actual-resp)))
       (is (= 200 (:status actual-resp)))))
@@ -118,7 +118,7 @@
                                            :headers json-header
                                            :body "")
           expected-resp {:message "", :validation-messages [{:field "name"
-                                                              :message "Field :name is not present"}]}]
+                                                             :message "Field :name is not present"}]}]
       (is (= 400 (:status actual-resp)))
       (is (= (map-as-json expected-resp) (:body actual-resp))))))
 
@@ -150,9 +150,9 @@
   (insert-test-data)
   (testing "Deleting works"
     (let [workflow-present-get-url (str "/workflow/"
-                                      (id-as-string
-                                        workflow-to-delete-datomic
-                                        :workflow/id))
+                                        (id-as-string
+                                         workflow-to-delete-datomic
+                                         :workflow/id))
           actual-resp (p.test/response-for service :delete workflow-present-get-url)
           conn (datomic.core/connect!)
           id (:id (workflow-to-delete-view))
@@ -168,5 +168,4 @@
   (testing "not present uuid gives 204"
     (let [workflow-present-get-url (str "/workflow/" (p-helper/uuid))
           actual-resp (p.test/response-for service :delete workflow-present-get-url)]
-      (is (= 204 (:status actual-resp)))))
-  )
+      (is (= 204 (:status actual-resp))))))

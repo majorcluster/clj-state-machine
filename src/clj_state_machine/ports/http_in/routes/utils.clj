@@ -1,6 +1,5 @@
 (ns clj-state-machine.ports.http-in.routes.utils
-  (:require [clj-state-machine.controllers.utils :as c.utils])
-  (:use clojure.pprint))
+  (:require [clj-state-machine.controllers.utils :as c.utils]))
 
 (defn message-catch
   [_ e]

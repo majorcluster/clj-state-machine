@@ -4,9 +4,7 @@
             [clojure.data.json :as json]
             [clojure.test :refer :all]
             [io.pedestal.http :as bootstrap]
-            [io.pedestal.test :refer :all]
-            [pedestal-api-helper.params-helper :as p-helper])
-  (:use clojure.pprint))
+            [pedestal-api-helper.params-helper :as p-helper]))
 
 (def base-message
   {:message ""

@@ -1,9 +1,7 @@
 (ns clj-state-machine.controllers.utils
   (:require [clj-state-machine.i18n.translations :as i.t]
             [clojure.set :as cset]
-            [clojure.string :as cstring])
-  (:use     clojure.pprint))
-
+            [clojure.string :as cstring]))
 
 ;default headers
 (def headers
@@ -33,7 +31,7 @@
 
 (defn format-message
   ([message]
-    message)
+   message)
   ([message & params]
    (if (and message (.contains message "%s"))
      (apply format message params)
@@ -73,12 +71,11 @@
                                                  to-reduce-keys)]
                         (cset/rename-keys entity renamed-keys))
         (vector? entity) (reduce (fn [col entity]
-                                (let [undefined (undefine-entity-keys entity-name entity)]
-                                  (conj col undefined)))
-                              []
-                              entity)
-        :else entity)
-  )
+                                   (let [undefined (undefine-entity-keys entity-name entity)]
+                                     (conj col undefined)))
+                                 []
+                                 entity)
+        :else entity))
 
 (defn not-found-message
   [language entity-name search-field-name]

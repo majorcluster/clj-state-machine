@@ -4,11 +4,11 @@
             [clj-state-machine.ports.datomic.workflow :as datomic.workflow]
             [clojure.set :as cset]
             [clojure.test :refer :all]
-            [core-test :refer :all]
+            [core-test :refer [base-message id-as-string json-as-map
+                               json-header map-as-json service test-fixture]]
             [datomic-helper.entity :as dh.entity]
             [io.pedestal.test :as p.test]
             [pedestal-api-helper.params-helper :as p-helper])
-  (:use clojure.pprint)
   (:import (java.util UUID)))
 
 (use-fixtures :each test-fixture)
@@ -73,9 +73,9 @@
   (testing "Already present transition is gotten"
     (let [expected-resp (assoc base-message :payload (transition-present-view))
           transition-present-get-url (str "/transition/"
-                                        (id-as-string
-                                          transition-present-datomic
-                                          :transition/id))
+                                          (id-as-string
+                                           transition-present-datomic
+                                           :transition/id))
           actual-resp (p.test/response-for service :get transition-present-get-url)]
       (is (= (map-as-json expected-resp) (:body actual-resp)))
       (is (= 200 (:status actual-resp)))))
@@ -132,7 +132,7 @@
                                            :headers json-header
                                            :body "")
           expected-resp {:message "", :validation-messages [{:field "name"
-                                                              :message "Field :name is not present"}]}]
+                                                             :message "Field :name is not present"}]}]
       (is (= 400 (:status actual-resp)))
       (is (= (map-as-json expected-resp) (:body actual-resp)))))
   (testing "insert with missing workflow-id gives 404"
@@ -180,9 +180,9 @@
   (insert-test-data)
   (testing "Deleting works"
     (let [transition-present-get-url (str "/transition/"
-                                      (id-as-string
-                                        transition-to-delete-datomic
-                                        :transition/id))
+                                          (id-as-string
+                                           transition-to-delete-datomic
+                                           :transition/id))
           actual-resp (p.test/response-for service :delete transition-present-get-url)
           conn (datomic.core/connect!)
           id (:id (transition-to-delete-view))

@@ -3,7 +3,6 @@
             [datomic-helper.entity :as dh.entity]
             [datomic.api :as d]
             [pedestal-api-helper.params-helper :as p-helper])
-  (:use clojure.pprint)
   (:import (java.util UUID)))
 
 (defn upsert!

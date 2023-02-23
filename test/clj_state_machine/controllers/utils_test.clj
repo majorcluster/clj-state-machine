@@ -1,7 +1,8 @@
 (ns clj-state-machine.controllers.utils-test
-  (:require [clj-state-machine.controllers.utils :refer :all]
-            [clojure.test :refer :all])
-  (:use [clojure.pprint]))
+  (:require [clj-state-machine.controllers.utils :refer [common-with-custom-message
+                                                         common-with-custom-message-n-params common-with-validation-messages format-message get-message
+                                                         headers redefine-entity-keys undefine-entity-keys]]
+            [clojure.test :refer :all]))
 
 (deftest common-with-custom-message-test
   (testing "existing message will have a custom text"
@@ -41,8 +42,7 @@
     (is (= "my message is nice and splendid"
            (format-message "my message is %s and %s" "nice" "splendid")))
     (is (= "my message is nice"
-           (format-message "my message is nice")))
-    ))
+           (format-message "my message is nice")))))
 
 (deftest get-message-test
   (testing "text will be replaced"
@@ -51,8 +51,7 @@
     (is (= "Field :name is not present"
            (get-message :en :field-not-present :name)))
     (is (= "Field %s is not present"
-           (get-message :en :field-not-present)))
-    ))
+           (get-message :en :field-not-present)))))
 
 (deftest redefine-entity-keys-test
   (testing "map has keys redefined"

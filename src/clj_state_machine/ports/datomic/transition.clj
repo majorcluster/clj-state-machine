@@ -3,7 +3,6 @@
             [datomic-helper.entity :as dh.entity]
             [datomic.api :as d]
             [pedestal-api-helper.params-helper :as p-helper])
-  (:use clojure.pprint)
   (:import (java.util UUID)))
 
 (defn upsert!
@@ -15,12 +14,12 @@
         complete (assoc entity :transition/id id)]
     (dh.entity/upsert! conn [:transition/id id] complete)
     (dh.entity/upsert-foreign!
-      conn
-      :transition/id
-      id
-      :workflow/transitions
-      :workflow/id
-      workflow-id)
+     conn
+     :transition/id
+     id
+     :workflow/transitions
+     :workflow/id
+     workflow-id)
     id))
 
 (defn delete!

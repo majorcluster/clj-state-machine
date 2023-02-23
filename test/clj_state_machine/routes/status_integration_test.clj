@@ -3,12 +3,12 @@
             [clj-state-machine.ports.datomic.status :as datomic.status]
             [clojure.set :as cset]
             [clojure.test :refer :all]
-            [core-test :refer :all]
+            [core-test :refer [base-message id-as-string json-as-map
+                               json-header map-as-json service test-fixture]]
             [datomic-helper.entity :as dh.entity]
             [io.pedestal.test :as p.test]
             [matcher-combinators.test]
             [pedestal-api-helper.params-helper :as p-helper])
-  (:use clojure.pprint)
   (:import (java.util UUID)))
 
 (use-fixtures :each test-fixture)
@@ -39,7 +39,7 @@
   [{:id (-> status-present-datomic
             :status/id
             (p-helper/uuid-as-string))
-   :name (get status-present-datomic :status/name)}
+    :name (get status-present-datomic :status/name)}
    {:id (-> status-finished-present-datomic
             :status/id
             (p-helper/uuid-as-string))
@@ -65,8 +65,8 @@
     (let [expected-resp (assoc base-message :payload (status-present-view))
           status-present-get-url (str "/status/"
                                       (id-as-string
-                                        status-present-datomic
-                                        :status/id))
+                                       status-present-datomic
+                                       :status/id))
           actual-resp (p.test/response-for service :get status-present-get-url)]
       (is (= (map-as-json expected-resp) (:body actual-resp)))
       (is (= 200 (:status actual-resp)))))
@@ -151,8 +151,8 @@
   (testing "Deleting works"
     (let [status-present-get-url (str "/status/"
                                       (id-as-string
-                                        status-to-delete-datomic
-                                        :status/id))
+                                       status-to-delete-datomic
+                                       :status/id))
           actual-resp (p.test/response-for service :delete status-present-get-url)
           conn (datomic.core/connect!)
           id (:id (status-to-delete-view))
@@ -168,5 +168,4 @@
   (testing "not present uuid gives 204"
     (let [status-present-get-url (str "/status/" (p-helper/uuid))
           actual-resp (p.test/response-for service :delete status-present-get-url)]
-      (is (= 204 (:status actual-resp)))))
-  )
+      (is (= 204 (:status actual-resp))))))

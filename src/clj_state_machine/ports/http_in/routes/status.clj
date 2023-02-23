@@ -4,7 +4,6 @@
             [clj-state-machine.controllers.utils :as c.utils]
             [clj-state-machine.ports.http-in.routes.utils :as r.utils]
             [pedestal-api-helper.params-helper :as p-helper])
-  (:use clojure.pprint)
   (:import (clojure.lang ExceptionInfo)))
 
 (defn get-status
@@ -17,7 +16,7 @@
                  :headers c.utils/headers
                  :body {:message ""
                         :payload found}}
-          :else (c.utils/not-found-message language "status" "id") )))
+          :else (c.utils/not-found-message language "status" "id"))))
 
 (defn post-status
   [request]
@@ -30,8 +29,7 @@
           body (p-helper/validate-and-mop!! crude-body mandatory-fields allowed-fields field-msg)]
       (c.status/upsert-facade body))
     (catch ExceptionInfo e
-      (r.utils/message-catch request e))
-    ))
+      (r.utils/message-catch request e))))
 
 (defn patch-status
   [request]
@@ -45,8 +43,7 @@
       (c.status/upsert-facade body)
       {:status 204})
     (catch ExceptionInfo e
-      (r.utils/message-catch request e))
-    ))
+      (r.utils/message-catch request e))))
 
 (defn delete-status
   [request]

@@ -3,7 +3,6 @@
             [datomic.api :as d]
             [outpace.config :refer [defconfig]]))
 
-
 (defconfig db-host)
 (defconfig db-name)
 

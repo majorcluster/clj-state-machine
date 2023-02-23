@@ -4,7 +4,6 @@
             [clj-state-machine.controllers.workflow :as c.workflow]
             [clj-state-machine.ports.http-in.routes.utils :as r.utils]
             [pedestal-api-helper.params-helper :as p-helper])
-  (:use clojure.pprint)
   (:import (clojure.lang ExceptionInfo)))
 
 (defn get-workflow
@@ -17,7 +16,7 @@
                  :headers c.utils/headers
                  :body {:message ""
                         :payload found}}
-          :else (c.utils/not-found-message language "workflow" "id") )))
+          :else (c.utils/not-found-message language "workflow" "id"))))
 
 (defn post-workflow
   [request]
@@ -30,8 +29,7 @@
           body (p-helper/validate-and-mop!! crude-body mandatory-fields allowed-fields field-msg)]
       (c.workflow/upsert-facade body))
     (catch ExceptionInfo e
-      (r.utils/message-catch request e))
-    ))
+      (r.utils/message-catch request e))))
 
 (defn patch-workflow
   [request]
@@ -45,8 +43,7 @@
       (c.workflow/upsert-facade body)
       {:status 204})
     (catch ExceptionInfo e
-      (r.utils/message-catch request e))
-    ))
+      (r.utils/message-catch request e))))
 
 (defn delete-workflow
   [request]

@@ -4,7 +4,6 @@
             [clj-state-machine.ports.datomic.workflow :as datomic.workflow]
             [datomic-helper.entity :as dh.entity]
             [pedestal-api-helper.params-helper :as p-helper])
-  (:use clojure.pprint)
   (:import (java.util UUID)))
 
 (defn get-facade

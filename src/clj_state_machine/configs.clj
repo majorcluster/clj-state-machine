@@ -12,6 +12,6 @@
 
 ;TODO implement cookies logic
 (defn get-language
-  [request]
+  [_]
   (let [default :en]
     default))

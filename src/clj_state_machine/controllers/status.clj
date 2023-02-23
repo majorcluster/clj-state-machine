@@ -4,7 +4,6 @@
             [clj-state-machine.ports.datomic.status :as datomic.status]
             [datomic-helper.entity :as dh.entity]
             [pedestal-api-helper.params-helper :as p-helper])
-  (:use clojure.pprint)
   (:import (java.util UUID)))
 
 (defn get-facade
@@ -15,9 +14,9 @@
     (cond no-id? (->> (dh.entity/find-all conn :status/id)
                       (c.utils/undefine-entity-keys "status"))
           is-uuid? (->> id
-                       UUID/fromString
-                       (dh.entity/find-by-id conn :status/id)
-                       (c.utils/undefine-entity-keys "status"))
+                        UUID/fromString
+                        (dh.entity/find-by-id conn :status/id)
+                        (c.utils/undefine-entity-keys "status"))
           :else nil)))
 
 (defn upsert-facade
