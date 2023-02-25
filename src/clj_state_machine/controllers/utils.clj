@@ -12,9 +12,6 @@
    :not-found {:status 404 :headers headers :body {:message ""}}
    :none {:status 500 :headers headers :body {:message ""}}})
 
-(def uuid-pattern
-  #"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$")
-
 (defn common-with-custom-message
   [ks message]
   (let [complete-message (ks common-messages)

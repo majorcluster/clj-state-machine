@@ -5,7 +5,7 @@
             [datomic-helper.schema-transform :as dh.s-transform]))
 
 (defonce specs
-  (dh.s-transform/schemas-to-datomic [(datomic.status/StatusDef)
+  (dh.s-transform/schemas-to-datomic [datomic.status/StatusDef
                                       (datomic.transition/TransitionDef)
                                       (datomic.workflow/WorkflowDef)]
                                      {:components [:workflow/transitions]}))

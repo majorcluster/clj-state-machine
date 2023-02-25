@@ -1,8 +1,10 @@
 (ns clj-state-machine.ports.datomic.status
-  (:require [clj-state-machine.ports.datomic.core :as datomic.core]
+  (:require [clj-state-machine.models.status :as models.status]
+            [clj-state-machine.ports.datomic.core :as datomic.core]
             [datomic-helper.entity :as dh.entity]
             [datomic.api :as d]
-            [pedestal-api-helper.params-helper :as p-helper])
+            [pedestal-api-helper.params-helper :as p-helper]
+            [schema.core :as s])
   (:import (java.util UUID)))
 
 (defn upsert!
@@ -24,3 +26,13 @@
         lookup-ref [:status/id id]]
     (d/transact conn
                 [[:db/retractEntity lookup-ref]])))
+
+(s/defn find-one :- (s/maybe models.status/StatusDef)
+  [id :- s/Uuid]
+  (->> id
+       (dh.entity/find-by-id (datomic.core/connect!) :status/id)))
+
+(s/defn find-all :- [models.status/StatusDef]
+  []
+  (->> :status/id
+       (dh.entity/find-all (datomic.core/connect!))))
