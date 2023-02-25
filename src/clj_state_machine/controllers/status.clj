@@ -10,15 +10,11 @@
     (cond no-id? (datomic.status/find-all)
           :else (datomic.status/find-one id))))
 
-(defn upsert-facade
-  [status]
-  (let [id-from-upsert (datomic.status/upsert! (controllers.utils/redefine-entity-keys "status" status))]
-    {:status  200
-     :headers controllers.utils/headers
-     :body    {:message ""
-               :payload {:id id-from-upsert}}}))
+(s/defn upsert-facade :- s/Uuid
+  [status :- models.status/StatusInputDef]
+  (datomic.status/upsert! status))
 
-(defn delete-facade
-  [_ id]
-  (datomic.status/delete! id)
-  {:status 204})
+(s/defn delete-facade
+  [_ :- s/Keyword
+   id :- s/Uuid]
+  (datomic.status/delete! id))

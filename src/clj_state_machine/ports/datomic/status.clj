@@ -7,8 +7,8 @@
             [schema.core :as s])
   (:import (java.util UUID)))
 
-(defn upsert!
-  [status]
+(s/defn upsert! :- s/Uuid
+  [status :- models.status/StatusInputDef]
   (let [conn (datomic.core/connect!)
         id (:status/id status)
         id (cond id id
@@ -18,8 +18,8 @@
     (dh.entity/upsert! conn lookup-ref status-complete)
     id))
 
-(defn delete!
-  [id]
+(s/defn delete!
+  [id :- s/Uuid]
   (let [conn (datomic.core/connect!)
         id (cond (p-helper/is-uuid id) (UUID/fromString id)
                  :else id)

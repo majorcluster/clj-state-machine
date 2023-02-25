@@ -25,7 +25,7 @@
                            (controllers.utils/not-found-message language "status" "id"))
           :else (controllers.utils/not-found-message language "status" "id"))))
 
-(s/defn post-status :- {s/Keyword s/Any}
+(s/defn post-status :- (in.commons/Response in.status/PostPutStatusPayloadDef)
   [request :- {s/Keyword s/Any}]
   (try
     (let [crude-body (:json-params request)
@@ -34,11 +34,16 @@
           language (configs/get-language request)
           field-msg (controllers.utils/get-message language :field-not-present)
           body (p-helper/validate-and-mop!! crude-body mandatory-fields allowed-fields field-msg)]
-      (controllers.status/upsert-facade body))
+      {:status  200
+       :headers controllers.utils/headers
+       :body    {:message ""
+                 :payload {:id (-> (partial data-adapter/kebab-key->namespaced-key "status")
+                                   (data-adapter/transform-keys body)
+                                   controllers.status/upsert-facade)}}})
     (catch ExceptionInfo e
       (routes.utils/message-catch request e))))
 
-(s/defn patch-status :- {s/Keyword s/Any}
+(s/defn patch-status :- (in.commons/Response in.status/PostPutStatusPayloadDef)
   [request :- {s/Keyword s/Any}]
   (try
     (let [crude-body (:json-params request)
@@ -47,8 +52,12 @@
           language (configs/get-language request)
           field-msg (controllers.utils/get-message language :field-not-present)
           body (p-helper/validate-and-mop!! crude-body mandatory-fields allowed-fields field-msg)]
-      (controllers.status/upsert-facade body)
-      {:status 204})
+      {:status  200
+       :headers controllers.utils/headers
+       :body    {:message ""
+                 :payload {:id (-> (partial data-adapter/kebab-key->namespaced-key "status")
+                                   (data-adapter/transform-keys body)
+                                   controllers.status/upsert-facade)}}})
     (catch ExceptionInfo e
       (routes.utils/message-catch request e))))
 
@@ -57,4 +66,5 @@
   (let [params (get request :path-params)
         language (configs/get-language request)
         id (get params :status-id)]
-    (controllers.status/delete-facade language id)))
+    (when (p-helper/is-uuid id) (controllers.status/delete-facade language (adapters.commons/str->uuid id)))
+    {:status 204}))

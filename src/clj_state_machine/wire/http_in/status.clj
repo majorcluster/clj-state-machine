@@ -11,3 +11,14 @@
   (s/cond-pre [StatusDef] StatusDef))
 
 (s/defschema GetStatusPayloadDef get-status-payload-skeleton)
+
+(def post-put-status-input-skeleton
+  {(s/optional-key :id) s/Uuid
+   :name s/Str})
+
+(s/defschema PostPutStatusInputDef post-put-status-input-skeleton)
+
+(def post-put-status-payload-skeleton
+  {:id s/Uuid})
+
+(s/defschema PostPutStatusPayloadDef post-put-status-payload-skeleton)

@@ -95,7 +95,7 @@
       (is (= (map-as-json expected-resp) (:body actual-resp)))
       (is (= 404 (:status actual-resp))))))
 
-(st/deftest post-status
+(st/deftest post-status-test
   (insert-test-data)
   (testing "insert with mandatory params works"
     (let [new-status (dissoc (status-present-view) :id)
@@ -123,7 +123,7 @@
       (is (= 400 (:status actual-resp)))
       (is (= (map-as-json expected-resp) (:body actual-resp))))))
 
-(st/deftest patch-status
+(st/deftest patch-status-test
   (insert-test-data)
   (testing "patch with mandatory params works"
     (let [new-name "preparing"
@@ -135,7 +135,7 @@
           id (:id (status-to-update-view))
           conn (datomic.core/connect!)
           status-in-db (dh.entity/find-by-id conn :status/id id)]
-      (is (= 204 (:status actual-resp)))
+      (is (= 200 (:status actual-resp)))
       (is (= (:status/name status-in-db) new-name))))
   (testing "patch with missing mandatory params gives 400"
     (let [actual-resp (p.test/response-for service
