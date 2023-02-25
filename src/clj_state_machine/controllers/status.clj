@@ -1,6 +1,5 @@
 (ns clj-state-machine.controllers.status
-  (:require [clj-state-machine.controllers.utils :as controllers.utils]
-            [clj-state-machine.models.status :as models.status]
+  (:require [clj-state-machine.models.status :as models.status]
             [clj-state-machine.ports.datomic.status :as datomic.status]
             [schema.core :as s]))
 
