@@ -1,11 +1,11 @@
 (ns clj-state-machine.wire.http-in.workflow
-  (:require [clj-state-machine.wire.http-in.transition :as m.t]
+  (:require [clj-state-machine.wire.http-in.transition :as in.transition]
             [schema.core :as s]))
 
 (def workflow-skeleton
   {:id s/Uuid
    (s/optional-key :name) s/Str
-   (s/optional-key :transitions) [(m.t/TransitionDef)]})
+   (s/optional-key :transitions) [in.transition/TransitionDef]})
 
 (s/defschema WorkflowDef workflow-skeleton)
 

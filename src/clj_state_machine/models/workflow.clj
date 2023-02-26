@@ -5,7 +5,7 @@
 (def workflow-skeleton
   {:workflow/id s/Uuid
    (s/optional-key :workflow/name) s/Str
-   (s/optional-key :workflow/transitions) [(models.transition/TransitionDef)]})
+   (s/optional-key :workflow/transitions) [models.transition/TransitionDef]})
 
 (s/defschema WorkflowDef workflow-skeleton)
 

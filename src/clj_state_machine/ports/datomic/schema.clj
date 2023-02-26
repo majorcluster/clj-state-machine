@@ -6,6 +6,6 @@
 
 (defonce specs
   (dh.s-transform/schemas-to-datomic [datomic.status/StatusDef
-                                      (datomic.transition/TransitionDef)
+                                      datomic.transition/TransitionDef
                                       datomic.workflow/WorkflowDef]
                                      {:components [:workflow/transitions]}))

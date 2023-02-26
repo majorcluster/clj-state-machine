@@ -5,6 +5,6 @@
 (def workflow-skeleton
   {:workflow/id s/Uuid
    (s/optional-key :workflow/name) s/Str
-   (s/optional-key :workflow/transitions) [(datomic.transition/TransitionDef)]})
+   (s/optional-key :workflow/transitions) [datomic.transition/TransitionDef]})
 
 (s/defschema WorkflowDef workflow-skeleton)
