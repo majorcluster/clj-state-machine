@@ -1,9 +1,10 @@
 (ns clj-state-machine.wire.datomic.workflow
-  (:require [clj-state-machine.wire.datomic.transition :as m.t]
+  (:require [clj-state-machine.wire.datomic.transition :as datomic.transition]
             [schema.core :as s]))
 
-(defn WorkflowDef
-  []
+(def workflow-skeleton
   {:workflow/id s/Uuid
    (s/optional-key :workflow/name) s/Str
-   (s/optional-key :workflow/transitions) [(m.t/TransitionDef)]})
+   (s/optional-key :workflow/transitions) [(datomic.transition/TransitionDef)]})
+
+(s/defschema WorkflowDef workflow-skeleton)

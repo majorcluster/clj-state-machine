@@ -7,7 +7,8 @@
                                json-header map-as-json service test-fixture]]
             [datomic-helper.entity :as dh.entity]
             [io.pedestal.test :as p.test]
-            [pedestal-api-helper.params-helper :as p-helper])
+            [pedestal-api-helper.params-helper :as p-helper]
+            [schema.test :as st])
   (:import (java.util UUID)))
 
 (use-fixtures :each test-fixture)
@@ -58,7 +59,7 @@
   (datomic.workflow/upsert! workflow-present-datomic)
   (datomic.workflow/upsert! workflow-finished-present-datomic))
 
-(deftest get-workflow
+(st/deftest get-workflow-test
   (insert-test-data)
   (testing "Already present workflow is gotten"
     (let [expected-resp (assoc base-message :payload (workflow-present-view))
@@ -93,7 +94,7 @@
       (is (cset/subset? (set (all-workflows-view)) (set body-map)))
       (is (= 200 (:status actual-resp))))))
 
-(deftest post-workflow
+(st/deftest post-workflow
   (insert-test-data)
   (testing "insert with mandatory params works"
     (let [new-workflow (dissoc (workflow-present-view) :id)
@@ -122,7 +123,7 @@
       (is (= 400 (:status actual-resp)))
       (is (= (map-as-json expected-resp) (:body actual-resp))))))
 
-(deftest patch-workflow
+(st/deftest patch-workflow
   (insert-test-data)
   (testing "patch with mandatory params works"
     (let [new-name "preparing"
@@ -134,7 +135,7 @@
           id (:id (workflow-to-update-view))
           conn (datomic.core/connect!)
           workflow-in-db (dh.entity/find-by-id conn :workflow/id id)]
-      (is (= 204 (:status actual-resp)))
+      (is (= 200 (:status actual-resp)))
       (is (= (:workflow/name workflow-in-db) new-name))))
   (testing "patch with missing mandatory params gives 400"
     (let [actual-resp (p.test/response-for service
@@ -146,7 +147,7 @@
       (is (= 400 (:status actual-resp)))
       (is (= (map-as-json expected-resp) (:body actual-resp))))))
 
-(deftest delete-workflow
+(st/deftest delete-workflow
   (insert-test-data)
   (testing "Deleting works"
     (let [workflow-present-get-url (str "/workflow/"
