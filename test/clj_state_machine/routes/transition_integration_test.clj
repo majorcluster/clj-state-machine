@@ -158,7 +158,7 @@
           workflow-in-db (dh.entity/find-by-id conn :workflow/id (:workflow/id workflow-present-datomic))
           workflow-transitions (get workflow-in-db :workflow/transitions [])
           found-in-workflow (some #(= (:transition/id %) id) workflow-transitions)]
-      (is (= 204 (:status actual-resp)))
+      (is (= 200 (:status actual-resp)))
       (is (= (:transition/name transition-in-db) new-name))
       (is found-in-workflow)))
   (testing "patch with missing mandatory params gives 400"

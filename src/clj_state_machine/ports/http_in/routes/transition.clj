@@ -18,24 +18,26 @@
         id (-> params :transition-id)]
     (cond (or (p-helper/is-uuid id)
               (nil? id)) (if-let [found (controllers.transition/get-facade (adapters.commons/str->uuid id))]
-                                     {:status  200
-                                      :headers controllers.utils/headers
-                                      :body    {:message ""
-                                                :payload (data-adapter/transform-keys data-adapter/namespaced-key->kebab-key found)}}
-                                     (controllers.utils/not-found-message language "transition" "id"))
+                           {:status  200
+                            :headers controllers.utils/headers
+                            :body    {:message ""
+                                      :payload (data-adapter/transform-keys data-adapter/namespaced-key->kebab-key found)}}
+                           (controllers.utils/not-found-message language "transition" "id"))
           :else (controllers.utils/not-found-message language "transition" "id"))))
 
-(defn extract-workflow-id!!
-  [request]
+(s/defn extract-workflow-id!! :- s/Uuid
+  [request :- {s/Keyword s/Any}]
   (let [workflow-id (-> request
                         :path-params
                         :workflow-id)]
-    (cond workflow-id workflow-id
-          :else ((throw (ex-info "Mandatory fields validation failed" {:type :bad-format
-                                                                       :validation-messages ["Path param :workflow-id not present"]}))))))
+    (cond (not workflow-id) ((throw (ex-info "Mandatory fields validation failed" {:type :bad-format
+                                                                                   :validation-messages ["Path param :workflow-id not present"]})))
+          (not (p-helper/is-uuid workflow-id)) ((throw (ex-info ":worklow-id invalid format" {:type :bad-format
+                                                                                              :validation-messages ["Path param :worklow-id invalid format"]})))
+          :else (adapters.commons/str->uuid workflow-id))))
 
-(defn post-transition
-  [request]
+(s/defn post-transition :- (in.commons/Response in.transition/PostPutTransitionPayloadDef)
+  [request :- {s/Keyword s/Any}]
   (try
     (let [crude-body (:json-params request)
           workflow-id (extract-workflow-id!! request)
@@ -44,12 +46,17 @@
           language (configs/get-language request)
           field-msg (controllers.utils/get-message language :field-not-present)
           body (p-helper/validate-and-mop!! crude-body mandatory-fields allowed-fields field-msg)]
-      (controllers.transition/upsert-facade workflow-id body))
+      {:status  200
+       :headers controllers.utils/headers
+       :body    {:message ""
+                 :payload {:id (-> (partial data-adapter/kebab-key->namespaced-key "transition")
+                                   (data-adapter/transform-keys body)
+                                   (controllers.transition/upsert-facade workflow-id))}}})
     (catch ExceptionInfo e
       (routes.utils/message-catch request e))))
 
-(defn patch-transition
-  [request]
+(s/defn patch-transition :- (in.commons/Response in.transition/PostPutTransitionPayloadDef)
+  [request :- {s/Keyword s/Any}]
   (try
     (let [crude-body (:json-params request)
           workflow-id (extract-workflow-id!! request)
@@ -58,14 +65,19 @@
           language (configs/get-language request)
           field-msg (controllers.utils/get-message language :field-not-present)
           body (p-helper/validate-and-mop!! crude-body mandatory-fields allowed-fields field-msg)]
-      (controllers.transition/upsert-facade workflow-id body)
-      {:status 204})
+      {:status  200
+       :headers controllers.utils/headers
+       :body    {:message ""
+                 :payload {:id (-> (partial data-adapter/kebab-key->namespaced-key "transition")
+                                   (data-adapter/transform-keys body)
+                                   (controllers.transition/upsert-facade workflow-id))}}})
     (catch ExceptionInfo e
       (routes.utils/message-catch request e))))
 
-(defn delete-transition
-  [request]
+(s/defn delete-transition
+  [request :- {s/Keyword s/Any}]
   (let [params (get request :path-params)
         language (configs/get-language request)
         id (get params :transition-id)]
-    (controllers.transition/delete-facade language id)))
+    (when (p-helper/is-uuid id) (controllers.transition/delete-facade language (adapters.commons/str->uuid id)))
+    {:status 204}))

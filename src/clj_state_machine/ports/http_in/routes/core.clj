@@ -1,5 +1,5 @@
 (ns clj-state-machine.ports.http-in.routes.core
-  (:require [clj-state-machine.ports.http-in.routes.interceptors :as i]
+  (:require [clj-state-machine.ports.http-in.routes.interceptors :as interceptors]
             [clj-state-machine.ports.http-in.routes.status :as routes.status]
             [clj-state-machine.ports.http-in.routes.transition :as routes.transition]
             [clj-state-machine.ports.http-in.routes.workflow :as routes.workflow]
@@ -10,7 +10,7 @@
                           http/html-body])
 
 (def json-interceptors [(body-params/body-params)
-                        (i/json-out)
+                        (interceptors/json-out)
                         http/html-body])
 
 (def specs #{["/status/:status-id" :get (conj json-interceptors `routes.status/get-status) :route-name :get-status]
@@ -27,4 +27,4 @@
              ["/transition" :get (conj json-interceptors `routes.transition/get-transition) :route-name :get-all-transition]
              ["/workflow/:workflow-id/transition" :post (conj json-interceptors `routes.transition/post-transition) :route-name :post-transition]
              ["/workflow/:workflow-id/transition" :patch (conj json-interceptors `routes.transition/patch-transition) :route-name :patch-transition]
-             ["/transition/:transition-id" :delete (conj common-interceptors `routes.workflow/delete-workflow) :route-name :delete-transition]})
+             ["/transition/:transition-id" :delete (conj common-interceptors `routes.transition/delete-transition) :route-name :delete-transition]})

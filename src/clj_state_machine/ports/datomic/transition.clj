@@ -7,8 +7,9 @@
             [schema.core :as s])
   (:import (java.util UUID)))
 
-(defn upsert!
-  [workflow-id entity]
+(s/defn upsert! :- s/Uuid
+  [workflow-id :- s/Uuid
+   entity :- models.transition/TransitionInputDef]
   (let [conn (datomic.core/connect!)
         id (:transition/id entity)
         id (cond id id
@@ -24,8 +25,8 @@
      workflow-id)
     id))
 
-(defn delete!
-  [id]
+(s/defn delete!
+  [id :- s/Uuid]
   (let [conn (datomic.core/connect!)
         id (cond (p-helper/is-uuid id) (UUID/fromString id)
                  :else id)
@@ -34,11 +35,11 @@
                 [[:db/retractEntity lookup-ref]])))
 
 (s/defn find-one :- (s/maybe models.transition/TransitionDef)
-        [id :- s/Uuid]
-        (->> id
-             (dh.entity/find-by-id (datomic.core/connect!) :transition/id)))
+  [id :- s/Uuid]
+  (->> id
+       (dh.entity/find-by-id (datomic.core/connect!) :transition/id)))
 
 (s/defn find-all :- [models.transition/TransitionDef]
-        []
-        (->> :transition/id
-             (dh.entity/find-all (datomic.core/connect!))))
+  []
+  (->> :transition/id
+       (dh.entity/find-all (datomic.core/connect!))))

@@ -1,9 +1,7 @@
 (ns clj-state-machine.controllers.transition
-  (:require [clj-state-machine.controllers.utils :as controllers.utils]
-            [clj-state-machine.models.transition :as models.transition]
+  (:require [clj-state-machine.models.transition :as models.transition]
             [clj-state-machine.ports.datomic.transition :as datomic.transition]
-            [schema.core :as s])
-  (:import (java.util UUID)))
+            [schema.core :as s]))
 
 (s/defn get-facade :- (s/cond-pre [models.transition/TransitionDef] models.transition/TransitionDef)
   [id :- (s/maybe s/Uuid)]
@@ -11,17 +9,12 @@
     (cond no-id? (datomic.transition/find-all)
           :else (datomic.transition/find-one id))))
 
-(defn upsert-facade
-  [workflow-id transition]
-  (let [workflow-id (cond (string? workflow-id) (UUID/fromString workflow-id)
-                          :else workflow-id)
-        id-from-upsert (datomic.transition/upsert! workflow-id (controllers.utils/redefine-entity-keys "transition" transition))]
-    {:status  200
-     :headers controllers.utils/headers
-     :body    {:message ""
-            :payload {:id id-from-upsert}}}))
+(s/defn upsert-facade :- s/Uuid
+  [transition :- models.transition/TransitionInputDef
+   workflow-id :- s/Uuid]
+  (datomic.transition/upsert! workflow-id transition))
 
-(defn delete-facade
-  [_ id]
-  (datomic.transition/delete! id)
-  {:status 204})
+(s/defn delete-facade
+  [_ :- s/Keyword
+   id :- s/Uuid]
+  (datomic.transition/delete! id))
