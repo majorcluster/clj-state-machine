@@ -8,7 +8,8 @@
             [datomic-helper.entity :as dh.entity]
             [io.pedestal.test :as p.test]
             [matcher-combinators.test]
-            [pedestal-api-helper.params-helper :as p-helper])
+            [pedestal-api-helper.params-helper :as p-helper]
+            [schema.test :as st])
   (:import (java.util UUID)))
 
 (use-fixtures :each test-fixture)
@@ -59,7 +60,7 @@
   (datomic.status/upsert! status-present-datomic)
   (datomic.status/upsert! status-finished-present-datomic))
 
-(deftest get-status
+(st/deftest get-status-test
   (insert-test-data)
   (testing "Already present status is gotten"
     (let [expected-resp (assoc base-message :payload (status-present-view))
@@ -94,7 +95,7 @@
       (is (= (map-as-json expected-resp) (:body actual-resp)))
       (is (= 404 (:status actual-resp))))))
 
-(deftest post-status
+(st/deftest post-status-test
   (insert-test-data)
   (testing "insert with mandatory params works"
     (let [new-status (dissoc (status-present-view) :id)
@@ -122,7 +123,7 @@
       (is (= 400 (:status actual-resp)))
       (is (= (map-as-json expected-resp) (:body actual-resp))))))
 
-(deftest patch-status
+(st/deftest patch-status-test
   (insert-test-data)
   (testing "patch with mandatory params works"
     (let [new-name "preparing"
@@ -134,7 +135,7 @@
           id (:id (status-to-update-view))
           conn (datomic.core/connect!)
           status-in-db (dh.entity/find-by-id conn :status/id id)]
-      (is (= 204 (:status actual-resp)))
+      (is (= 200 (:status actual-resp)))
       (is (= (:status/name status-in-db) new-name))))
   (testing "patch with missing mandatory params gives 400"
     (let [actual-resp (p.test/response-for service
@@ -146,7 +147,7 @@
       (is (= 400 (:status actual-resp)))
       (is (= (map-as-json expected-resp) (:body actual-resp))))))
 
-(deftest delete-status
+(st/deftest delete-status
   (insert-test-data)
   (testing "Deleting works"
     (let [status-present-get-url (str "/status/"

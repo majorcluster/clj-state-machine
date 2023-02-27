@@ -1,35 +1,20 @@
 (ns clj-state-machine.controllers.transition
-  (:require [clj-state-machine.controllers.utils :as c.utils]
-            [clj-state-machine.ports.datomic.core :as datomic.core]
+  (:require [clj-state-machine.models.transition :as models.transition]
             [clj-state-machine.ports.datomic.transition :as datomic.transition]
-            [datomic-helper.entity :as dh.entity]
-            [pedestal-api-helper.params-helper :as p-helper])
-  (:import (java.util UUID)))
+            [schema.core :as s]))
 
-(defn get-facade
-  [id]
-  (let [no-id? (nil? id)
-        conn (datomic.core/connect!)
-        is-uuid? (p-helper/is-uuid id)]
-    (cond no-id? (->> (dh.entity/find-all conn :transition/id)
-                      (c.utils/undefine-entity-keys "transition"))
-          is-uuid? (->> id
-                        UUID/fromString
-                        (dh.entity/find-by-id conn :transition/id)
-                        (c.utils/undefine-entity-keys "transition"))
-          :else nil)))
+(s/defn get-facade :- (s/cond-pre [models.transition/TransitionDef] models.transition/TransitionDef)
+  [id :- (s/maybe s/Uuid)]
+  (let [no-id? (nil? id)]
+    (cond no-id? (datomic.transition/find-all)
+          :else (datomic.transition/find-one id))))
 
-(defn upsert-facade
-  [workflow-id transition]
-  (let [workflow-id (cond (string? workflow-id) (UUID/fromString workflow-id)
-                          :else workflow-id)
-        id-from-upsert (datomic.transition/upsert! workflow-id (c.utils/redefine-entity-keys "transition" transition))]
-    {:status 200
-     :headers c.utils/headers
-     :body {:message ""
-            :payload {:id id-from-upsert}}}))
+(s/defn upsert-facade :- s/Uuid
+  [transition :- models.transition/TransitionInputDef
+   workflow-id :- s/Uuid]
+  (datomic.transition/upsert! workflow-id transition))
 
-(defn delete-facade
-  [_ id]
-  (datomic.transition/delete! id)
-  {:status 204})
+(s/defn delete-facade
+  [_ :- s/Keyword
+   id :- s/Uuid]
+  (datomic.transition/delete! id))

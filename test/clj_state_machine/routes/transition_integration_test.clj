@@ -8,7 +8,8 @@
                                json-header map-as-json service test-fixture]]
             [datomic-helper.entity :as dh.entity]
             [io.pedestal.test :as p.test]
-            [pedestal-api-helper.params-helper :as p-helper])
+            [pedestal-api-helper.params-helper :as p-helper]
+            [schema.test :as st])
   (:import (java.util UUID)))
 
 (use-fixtures :each test-fixture)
@@ -68,7 +69,7 @@
     (datomic.transition/upsert! workflow-id transition-present-datomic)
     (datomic.transition/upsert! workflow-id transition-mobile-checkout-present-datomic)))
 
-(deftest get-transition
+(st/deftest get-transition-test
   (insert-test-data)
   (testing "Already present transition is gotten"
     (let [expected-resp (assoc base-message :payload (transition-present-view))
@@ -103,7 +104,7 @@
       (is (cset/subset? (set (all-transitions-view)) (set body-map)))
       (is (= 200 (:status actual-resp))))))
 
-(deftest post-transition
+(st/deftest post-transition-test
   (insert-test-data)
   (testing "insert with mandatory params works"
     (let [new-transition (dissoc (transition-present-view) :id)
@@ -142,7 +143,7 @@
                                            :body "")]
       (is (= 404 (:status actual-resp))))))
 
-(deftest patch-transition
+(st/deftest patch-transition-test
   (insert-test-data)
   (testing "patch with mandatory params works"
     (let [new-name "preparing"
@@ -157,7 +158,7 @@
           workflow-in-db (dh.entity/find-by-id conn :workflow/id (:workflow/id workflow-present-datomic))
           workflow-transitions (get workflow-in-db :workflow/transitions [])
           found-in-workflow (some #(= (:transition/id %) id) workflow-transitions)]
-      (is (= 204 (:status actual-resp)))
+      (is (= 200 (:status actual-resp)))
       (is (= (:transition/name transition-in-db) new-name))
       (is found-in-workflow)))
   (testing "patch with missing mandatory params gives 400"
@@ -176,7 +177,7 @@
                                            :body "")]
       (is (= 404 (:status actual-resp))))))
 
-(deftest delete-transition
+(st/deftest delete-transition-test
   (insert-test-data)
   (testing "Deleting works"
     (let [transition-present-get-url (str "/transition/"

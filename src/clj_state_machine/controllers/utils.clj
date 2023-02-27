@@ -1,7 +1,8 @@
 (ns clj-state-machine.controllers.utils
   (:require [clj-state-machine.i18n.translations :as i.t]
             [clojure.set :as cset]
-            [clojure.string :as cstring]))
+            [clojure.string :as cstring]
+            [schema.core :as s]))
 
 ;default headers
 (def headers
@@ -11,9 +12,6 @@
   {:bad-format {:status 400 :headers headers :body {:message ""}}
    :not-found {:status 404 :headers headers :body {:message ""}}
    :none {:status 500 :headers headers :body {:message ""}}})
-
-(def uuid-pattern
-  #"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$")
 
 (defn common-with-custom-message
   [ks message]
@@ -29,10 +27,10 @@
         new-body (assoc body :validation-messages validation-messages)]
     (assoc complete-message :body new-body)))
 
-(defn format-message
-  ([message]
+(s/defn format-message :- s/Str
+  ([message :- s/Str]
    message)
-  ([message & params]
+  ([message :- s/Str & params]
    (if (and message (.contains message "%s"))
      (apply format message params)
      message)))
@@ -83,8 +81,9 @@
         crude-translation (:not-found translations)]
     (common-with-custom-message-n-params :not-found crude-translation entity-name search-field-name)))
 
-(defn get-message
-  [language message_key & params]
+(s/defn get-message :- s/Str
+  [language :- s/Keyword
+   message_key :- s/Keyword & params]
   (let [translations (language i.t/all)
         crude-translation (message_key translations)]
     (apply format-message crude-translation params)))

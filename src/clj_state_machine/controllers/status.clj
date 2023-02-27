@@ -1,33 +1,19 @@
 (ns clj-state-machine.controllers.status
-  (:require [clj-state-machine.controllers.utils :as c.utils]
-            [clj-state-machine.ports.datomic.core :as datomic.core]
+  (:require [clj-state-machine.models.status :as models.status]
             [clj-state-machine.ports.datomic.status :as datomic.status]
-            [datomic-helper.entity :as dh.entity]
-            [pedestal-api-helper.params-helper :as p-helper])
-  (:import (java.util UUID)))
+            [schema.core :as s]))
 
-(defn get-facade
-  [id]
-  (let [no-id? (nil? id)
-        conn (datomic.core/connect!)
-        is-uuid? (p-helper/is-uuid id)]
-    (cond no-id? (->> (dh.entity/find-all conn :status/id)
-                      (c.utils/undefine-entity-keys "status"))
-          is-uuid? (->> id
-                        UUID/fromString
-                        (dh.entity/find-by-id conn :status/id)
-                        (c.utils/undefine-entity-keys "status"))
-          :else nil)))
+(s/defn get-facade :- (s/cond-pre [models.status/StatusDef] models.status/StatusDef)
+  [id :- (s/maybe s/Uuid)]
+  (let [no-id? (nil? id)]
+    (cond no-id? (datomic.status/find-all)
+          :else (datomic.status/find-one id))))
 
-(defn upsert-facade
-  [status]
-  (let [id-from-upsert (datomic.status/upsert! (c.utils/redefine-entity-keys "status" status))]
-    {:status 200
-     :headers c.utils/headers
-     :body {:message ""
-            :payload {:id id-from-upsert}}}))
+(s/defn upsert-facade :- s/Uuid
+  [status :- models.status/StatusInputDef]
+  (datomic.status/upsert! status))
 
-(defn delete-facade
-  [_ id]
-  (datomic.status/delete! id)
-  {:status 204})
+(s/defn delete-facade
+  [_ :- s/Keyword
+   id :- s/Uuid]
+  (datomic.status/delete! id))
