@@ -4,9 +4,10 @@
             [schema.core :as s]))
 
 (s/defn get-facade :- (s/cond-pre [models.transition/TransitionDef] models.transition/TransitionDef)
-  [id :- (s/maybe s/Uuid)]
+  [id :- (s/maybe s/Uuid)
+   workflow-id :- (s/maybe s/Uuid)]
   (let [no-id? (nil? id)]
-    (cond no-id? (datomic.transition/find-all)
+    (cond no-id? (datomic.transition/find-all workflow-id)
           :else (datomic.transition/find-one id))))
 
 (s/defn upsert-facade :- s/Uuid
