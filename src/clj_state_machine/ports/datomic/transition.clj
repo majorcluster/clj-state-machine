@@ -45,9 +45,9 @@
                         q '[:find [(pull ?e [*]) ...]
                             :in $ ?id-ks ?workflow-id
                             :where [?wf-e :workflow/id ?workflow-id]
-                                   [?wf-e :workflow/transitions ?e]
-                                   [?e ?id-ks]]]
+                            [?wf-e :workflow/transitions ?e]
+                            [?e ?id-ks]]]
                     (->> (d/q q db :transition/id workflow-id)
                          (dh.entity/transform-out)))
-                  (->> :transition/id
-                       (dh.entity/find-all (datomic.core/connect!)))))
+      (->> :transition/id
+           (dh.entity/find-all (datomic.core/connect!)))))
