@@ -7,6 +7,7 @@
 (def service {:env (keyword configs/env)
               ::http/routes routes/specs
               ::http/resource-path "/public"
+              ::http/router :linear-search
 
               ::http/type :jetty
               ::http/port 8080

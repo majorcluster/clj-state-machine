@@ -14,12 +14,19 @@
 
 (use-fixtures :each test-fixture)
 
+(def workflow-id (p-helper/uuid))
+(def workflow-2-id (p-helper/uuid))
+
 (def workflow-present-datomic
-  {:workflow/id (p-helper/uuid)
+  {:workflow/id workflow-id
    :workflow/name "checkout"})
 
+(def workflow-2-present-datomic
+  {:workflow/id workflow-2-id
+   :workflow/name "another-wf"})
+
 (defn workflow-present-url-piece []
-  (str "/workflow/" (:workflow/id workflow-present-datomic)))
+  (str "/workflow/" workflow-id))
 
 (def transition-present-datomic
   {:transition/id (p-helper/uuid)
@@ -64,10 +71,9 @@
    :name (get transition-to-delete-datomic :transition/name)})
 
 (defn- insert-test-data []
-  (let [workflow-id (:workflow/id workflow-present-datomic)]
-    (datomic.workflow/upsert! workflow-present-datomic)
-    (datomic.transition/upsert! workflow-id transition-present-datomic)
-    (datomic.transition/upsert! workflow-id transition-mobile-checkout-present-datomic)))
+  (datomic.workflow/upsert! workflow-present-datomic)
+  (datomic.transition/upsert! workflow-id transition-present-datomic)
+  (datomic.transition/upsert! workflow-id transition-mobile-checkout-present-datomic))
 
 (st/deftest get-transition-test
   (insert-test-data)
@@ -103,6 +109,32 @@
                         :payload)]
       (is (cset/subset? (set (all-transitions-view)) (set body-map)))
       (is (= 200 (:status actual-resp))))))
+
+(st/deftest get-workflow-transition-test
+    (datomic.workflow/upsert! workflow-present-datomic)
+    (datomic.workflow/upsert! workflow-2-present-datomic)
+    (datomic.transition/upsert! workflow-id transition-present-datomic)
+    (datomic.transition/upsert! workflow-2-id transition-mobile-checkout-present-datomic)
+    (testing "Already present transition is gotten"
+      (let [expected-resp (assoc base-message :payload [(transition-present-view)])
+            url (str "/workflow/" workflow-id "/transition")
+            actual-resp (p.test/response-for service :get url)]
+        (is (= (map-as-json expected-resp) (:body actual-resp)))
+        (is (= 200 (:status actual-resp)))))
+
+    (testing "non uuid gives not found"
+      (let [expected-resp {:message "transition was not found with given id"}
+            url "/workflow/39384/transition"
+            actual-resp (p.test/response-for service :get url)]
+        (is (= (map-as-json expected-resp) (:body actual-resp)))
+        (is (= 404 (:status actual-resp)))))
+
+    (testing "not present uuid gives not found"
+      (let [expected-resp (assoc base-message :payload [])
+            url (str "/workflow/" (p-helper/uuid) "/transition")
+            actual-resp (p.test/response-for service :get url)]
+        (is (= (map-as-json expected-resp) (:body actual-resp)))
+        (is (= 200 (:status actual-resp))))))
 
 (st/deftest post-transition-test
   (insert-test-data)

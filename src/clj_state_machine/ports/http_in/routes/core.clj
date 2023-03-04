@@ -26,5 +26,6 @@
              ["/transition/:transition-id" :get (conj json-interceptors `routes.transition/get-transition) :route-name :get-transition]
              ["/transition" :get (conj json-interceptors `routes.transition/get-transition) :route-name :get-all-transition]
              ["/workflow/:workflow-id/transition" :post (conj json-interceptors `routes.transition/post-transition) :route-name :post-transition]
+             ["/workflow/:workflow-id/transition" :get (conj json-interceptors `routes.transition/get-transition) :route-name :get-workflow-transition]
              ["/workflow/:workflow-id/transition" :patch (conj json-interceptors `routes.transition/patch-transition) :route-name :patch-transition]
              ["/transition/:transition-id" :delete (conj common-interceptors `routes.transition/delete-transition) :route-name :delete-transition]})

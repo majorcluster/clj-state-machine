@@ -11,13 +11,19 @@
             [schema.core :as s])
   (:import (clojure.lang ExceptionInfo)))
 
+(defn- all-uuid-or-nil
+  [& ids]
+  (every? #(or (not %)
+                (p-helper/is-uuid %)) ids))
+
 (s/defn get-transition :- (in.commons/Response in.transition/GetTransitionPayloadDef)
   [request :- {s/Keyword s/Any}]
   (let [params (get request :path-params)
         language (configs/get-language request)
-        id (-> params :transition-id)]
-    (cond (or (p-helper/is-uuid id)
-              (nil? id)) (if-let [found (controllers.transition/get-facade (adapters.commons/str->uuid id))]
+        id (-> params :transition-id)
+        workflow-id (-> params :workflow-id)]
+    (cond (all-uuid-or-nil id workflow-id) (if-let [found (controllers.transition/get-facade (adapters.commons/str->uuid id)
+                                                                           (adapters.commons/str->uuid workflow-id))]
                            {:status  200
                             :headers controllers.utils/headers
                             :body    {:message ""
