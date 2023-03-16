@@ -5,5 +5,7 @@
   [_ e]
   (let [data (.getData e)
         type (get data :type :none)
+        message (get data :message)
         validation-messages (get data :validation-messages [])]
-    (controllers.utils/common-with-validation-messages type validation-messages)))
+    (if message (controllers.utils/common-with-custom-message type message)
+        (controllers.utils/common-with-validation-messages type validation-messages))))

@@ -10,7 +10,9 @@
                                                db-name
                                                env]}
                  :unresolved-var {:exclude [clj-state-machine.configs]}
-                 :clojure-lsp/unused-public-var {:exclude-regex [".+\\.server/run-dev"]}}
+                 :clojure-lsp/unused-public-var {:exclude-regex [".+\\.server/run-dev"
+                                                                 ".+\\.configs/env-test\\?"
+                                                                 ".+\\.configs/cookies"]}}
  :config-in-ns {user {:linters {:unused-referred-var {:level :off}
                                 :unused-namespace {:level :off}
                                 :refer-all {:level :off}}}}}

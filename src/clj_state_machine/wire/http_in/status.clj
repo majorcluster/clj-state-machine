@@ -2,7 +2,7 @@
   (:require [schema.core :as s]))
 
 (def status-skeleton
-  {:id s/Uuid
+  {:id s/Str
    (s/optional-key :name) s/Str})
 
 (s/defschema StatusDef status-skeleton)

@@ -1,8 +1,9 @@
 (ns clj-state-machine.routes.transition-integration-test
-  (:require [clj-state-machine.ports.datomic.core :as datomic.core]
+  (:require [clj-data-adapter.core :as data-adapter]
+            [clj-state-machine.ports.datomic.core :as datomic.core]
+            [clj-state-machine.ports.datomic.status :as datomic.status]
             [clj-state-machine.ports.datomic.transition :as datomic.transition]
             [clj-state-machine.ports.datomic.workflow :as datomic.workflow]
-            [clojure.set :as cset]
             [clojure.test :refer :all]
             [core-test :refer [base-message id-as-string json-as-map
                                json-header map-as-json service test-fixture]]
@@ -28,42 +29,68 @@
 (defn workflow-present-url-piece []
   (str "/workflow/" workflow-id))
 
-(def transition-present-datomic
+(def status-open
+  {:status/id (p-helper/uuid)
+   :status/name "open"})
+
+(def status-closed
+  {:status/id (p-helper/uuid)
+   :status/name "closed"})
+
+(def transition-open-datomic
   {:transition/id (p-helper/uuid)
-   :transition/name "checkout"})
+   :transition/name "open"
+   :transition/status-to status-open})
+
+(def transition-close-datomic
+  {:transition/id (p-helper/uuid)
+   :transition/name "close"
+   :transition/status-from status-open
+   :transition/status-to status-closed})
 
 (def transition-to-update-datomic
   {:transition/id (p-helper/uuid)
-   :transition/name "express-checkout"})
+   :transition/name "express-checkout"
+   :transition/status-from status-open
+   :transition/status-to status-open})
 
 (def transition-mobile-checkout-present-datomic
   {:transition/id (p-helper/uuid)
-   :transition/name "mobile-checkout"})
+   :transition/name "mobile-checkout"
+   :transition/status-to status-open})
 
 (def transition-to-delete-datomic
   {:transition/id (p-helper/uuid)
-   :transition/name "delete-me"})
+   :transition/name "delete-me"
+   :transition/status-to status-open})
 
 (defn- transition-present-view
   []
-  {:id (get transition-present-datomic :transition/id)
-   :name (get transition-present-datomic :transition/name)})
+  {:id (get transition-open-datomic :transition/id)
+   :name (get transition-open-datomic :transition/name)
+   :status-to {:id (:status/id status-open)
+               :name (:status/name status-open)}})
+
+(defn- transition-present-post-input
+  []
+  {:id (get transition-open-datomic :transition/id)
+   :name (get transition-open-datomic :transition/name)
+   :status-to (str (:status/id status-open))})
 
 (defn- all-transitions-view
   []
-  [{:id (-> transition-present-datomic
-            :transition/id
-            (p-helper/uuid-as-string))
-    :name (get transition-present-datomic :transition/name)}
-   {:id (-> transition-mobile-checkout-present-datomic
-            :transition/id
-            (p-helper/uuid-as-string))
-    :name (get transition-mobile-checkout-present-datomic :transition/name)}])
+  (->> [transition-open-datomic
+        transition-close-datomic
+        transition-mobile-checkout-present-datomic]
+       (data-adapter/transform-values data-adapter/uuid->str)
+       (data-adapter/transform-keys data-adapter/namespaced-key->kebab-key)
+       set))
 
-(defn- transition-to-update-view
-  []
+(def transition-to-update-view
   {:id (get transition-to-update-datomic :transition/id)
-   :name (get transition-to-update-datomic :transition/name)})
+   :name (get transition-to-update-datomic :transition/name)
+   :status-from (get transition-to-update-datomic :transition/status-from)
+   :status-to (get transition-to-update-datomic :transition/status-to)})
 
 (defn- transition-to-delete-view
   []
@@ -71,8 +98,11 @@
    :name (get transition-to-delete-datomic :transition/name)})
 
 (defn- insert-test-data []
+  (datomic.status/upsert! status-open)
+  (datomic.status/upsert! status-closed)
   (datomic.workflow/upsert! workflow-present-datomic)
-  (datomic.transition/upsert! workflow-id transition-present-datomic)
+  (datomic.transition/upsert! workflow-id transition-open-datomic)
+  (datomic.transition/upsert! workflow-id transition-close-datomic)
   (datomic.transition/upsert! workflow-id transition-mobile-checkout-present-datomic))
 
 (st/deftest get-transition-test
@@ -81,7 +111,7 @@
     (let [expected-resp (assoc base-message :payload (transition-present-view))
           transition-present-get-url (str "/transition/"
                                           (id-as-string
-                                           transition-present-datomic
+                                           transition-open-datomic
                                            :transition/id))
           actual-resp (p.test/response-for service :get transition-present-get-url)]
       (is (= (map-as-json expected-resp) (:body actual-resp)))
@@ -107,13 +137,13 @@
                         :body
                         (json-as-map)
                         :payload)]
-      (is (cset/subset? (set (all-transitions-view)) (set body-map)))
+      (is (= (all-transitions-view) (set body-map)))
       (is (= 200 (:status actual-resp))))))
 
 (st/deftest get-workflow-transition-test
   (datomic.workflow/upsert! workflow-present-datomic)
   (datomic.workflow/upsert! workflow-2-present-datomic)
-  (datomic.transition/upsert! workflow-id transition-present-datomic)
+  (datomic.transition/upsert! workflow-id transition-open-datomic)
   (datomic.transition/upsert! workflow-2-id transition-mobile-checkout-present-datomic)
   (testing "Already present transition is gotten"
     (let [expected-resp (assoc base-message :payload [(transition-present-view)])
@@ -139,7 +169,7 @@
 (st/deftest post-transition-test
   (insert-test-data)
   (testing "insert with mandatory params works"
-    (let [new-transition (dissoc (transition-present-view) :id)
+    (let [new-transition (dissoc (transition-present-post-input) :id)
           new-name "dispatching"
           new-transition (assoc new-transition :name new-name)
           actual-resp (p.test/response-for service
@@ -165,7 +195,9 @@
                                            :headers json-header
                                            :body "")
           expected-resp {:message "", :validation-messages [{:field "name"
-                                                             :message "Field :name is not present"}]}]
+                                                             :message "Field :name is not present"}
+                                                            {:field "status-to"
+                                                             :message "Field :status-to is not present"}]}]
       (is (= 400 (:status actual-resp)))
       (is (= (map-as-json expected-resp) (:body actual-resp)))))
   (testing "insert with missing workflow-id gives 404"
@@ -177,14 +209,15 @@
 
 (st/deftest patch-transition-test
   (insert-test-data)
-  (testing "patch with mandatory params works"
+  (testing "patch with mandatory params and at least 1 extra param works"
     (let [new-name "preparing"
-          new-transition (assoc (transition-to-update-view) :name new-name)
+          new-transition (assoc (dissoc transition-to-update-view
+                                        :status-from :status-to) :name new-name)
           actual-resp (p.test/response-for service
                                            :patch (str (workflow-present-url-piece) "/transition")
                                            :headers json-header
                                            :body (map-as-json new-transition))
-          id (:id (transition-to-update-view))
+          id (:id transition-to-update-view)
           conn (datomic.core/connect!)
           transition-in-db (dh.entity/find-by-id conn :transition/id id)
           workflow-in-db (dh.entity/find-by-id conn :workflow/id (:workflow/id workflow-present-datomic))
@@ -198,8 +231,7 @@
                                            :patch (str (workflow-present-url-piece) "/transition")
                                            :headers json-header
                                            :body "")
-          expected-resp {:message "", :validation-messages [{:field "id" :message "Field :id is not present"}
-                                                            {:field "name" :message "Field :name is not present"}]}]
+          expected-resp {:message "", :validation-messages [{:field "id" :message "Field :id is not present"}]}]
       (is (= 400 (:status actual-resp)))
       (is (= (map-as-json expected-resp) (:body actual-resp)))))
   (testing "patch with missing workflow-id gives 404"
@@ -207,7 +239,16 @@
                                            :patch "/transition"
                                            :headers json-header
                                            :body "")]
-      (is (= 404 (:status actual-resp))))))
+      (is (= 404 (:status actual-resp)))))
+  (testing "patch with only id gives 400"
+    (let [actual-resp (p.test/response-for service
+                                           :patch (str (workflow-present-url-piece) "/transition")
+                                           :headers json-header
+                                           :body (map-as-json (dissoc transition-to-update-view
+                                                                      :name :status-from :status-to)))
+          expected-resp {:message "At least one of :name,:status-from,:status-to must be present"}]
+      (is (= 400 (:status actual-resp)))
+      (is (= (map-as-json expected-resp) (:body actual-resp))))))
 
 (st/deftest delete-transition-test
   (insert-test-data)
