@@ -1,6 +1,6 @@
 (ns clj-state-machine.ports.http-in.routes.transition
-  (:require [clj-data-adapter.core :as data-adapter]
-            [clj-state-machine.adapters.commons :as adapters.commons]
+  (:require [clj-state-machine.adapters.commons :as adapters.commons]
+            [clj-state-machine.adapters.transition :as adapters.transition]
             [clj-state-machine.configs :as configs]
             [clj-state-machine.controllers.transition :as controllers.transition]
             [clj-state-machine.controllers.utils :as controllers.utils]
@@ -27,7 +27,7 @@
                                              {:status  200
                                               :headers controllers.utils/headers
                                               :body    {:message ""
-                                                        :payload (data-adapter/transform-keys data-adapter/namespaced-key->kebab-key found)}}
+                                                        :payload (adapters.transition/internal->wire found)}}
                                              (controllers.utils/not-found-message language "transition" "id"))
           :else (controllers.utils/not-found-message language "transition" "id"))))
 
@@ -36,10 +36,10 @@
   (let [workflow-id (-> request
                         :path-params
                         :workflow-id)]
-    (cond (not workflow-id) ((throw (ex-info "Mandatory fields validation failed" {:type :bad-format
-                                                                                   :validation-messages ["Path param :workflow-id not present"]})))
-          (not (p-helper/is-uuid workflow-id)) ((throw (ex-info ":worklow-id invalid format" {:type :bad-format
-                                                                                              :validation-messages ["Path param :worklow-id invalid format"]})))
+    (cond (not workflow-id) (throw (ex-info "Mandatory fields validation failed" {:type :bad-format
+                                                                                  :message "Path param :workflow-id not present"}))
+          (not (p-helper/is-uuid workflow-id)) (throw (ex-info ":worklow-id invalid format" {:type :bad-format
+                                                                                             :message "Path param :worklow-id invalid format"}))
           :else (adapters.commons/str->uuid workflow-id))))
 
 (s/defn post-transition :- (in.commons/Response in.transition/PostPutTransitionPayloadDef)
@@ -47,16 +47,16 @@
   (try
     (let [crude-body (:json-params request)
           workflow-id (extract-workflow-id!! request)
-          mandatory-fields ["name"]
-          allowed-fields ["name"]
+          mandatory-fields ["name" "status-to"]
+          allowed-fields ["name" "status-to" "status-from"]
           language (configs/get-language request)
           field-msg (controllers.utils/get-message language :field-not-present)
           body (p-helper/validate-and-mop!! crude-body mandatory-fields allowed-fields field-msg)]
       {:status  200
        :headers controllers.utils/headers
        :body    {:message ""
-                 :payload {:id (-> (partial data-adapter/kebab-key->namespaced-key "transition")
-                                   (data-adapter/transform-keys body)
+                 :payload {:id (-> body
+                                   adapters.transition/post-wire->internal
                                    (controllers.transition/upsert-facade workflow-id))}}})
     (catch ExceptionInfo e
       (routes.utils/message-catch request e))))
@@ -66,17 +66,20 @@
   (try
     (let [crude-body (:json-params request)
           workflow-id (extract-workflow-id!! request)
-          mandatory-fields ["id","name"]
-          allowed-fields ["id","name"]
+          mandatory-fields ["id"]
+          allowed-fields ["id","name","status-from","status-to"]
           language (configs/get-language request)
           field-msg (controllers.utils/get-message language :field-not-present)
           body (p-helper/validate-and-mop!! crude-body mandatory-fields allowed-fields field-msg)]
-      {:status  200
-       :headers controllers.utils/headers
-       :body    {:message ""
-                 :payload {:id (-> (partial data-adapter/kebab-key->namespaced-key "transition")
-                                   (data-adapter/transform-keys body)
-                                   (controllers.transition/upsert-facade workflow-id))}}})
+      (cond (<= (count body) 1) (throw (ex-info "Mandatory fields validation failed" {:type :bad-format
+                                                                                      :message "At least one of :name,:status-from,:status-to must be present"}))
+
+            :else {:status  200
+                   :headers controllers.utils/headers
+                   :body    {:message ""
+                             :payload {:id (-> body
+                                               adapters.transition/patch-wire->internal
+                                               (controllers.transition/patch-facade workflow-id))}}}))
     (catch ExceptionInfo e
       (routes.utils/message-catch request e))))
 

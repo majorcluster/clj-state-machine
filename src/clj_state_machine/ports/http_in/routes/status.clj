@@ -21,7 +21,9 @@
                            {:status  200
                             :headers controllers.utils/headers
                             :body    {:message ""
-                                      :payload (data-adapter/transform-keys data-adapter/namespaced-key->kebab-key found)}}
+                                      :payload (->> found
+                                                    (data-adapter/transform-keys data-adapter/namespaced-key->kebab-key)
+                                                    (data-adapter/transform-values data-adapter/uuid->str))}}
                            (controllers.utils/not-found-message language "status" "id"))
           :else (controllers.utils/not-found-message language "status" "id"))))
 

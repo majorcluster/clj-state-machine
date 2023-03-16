@@ -15,6 +15,11 @@
    workflow-id :- s/Uuid]
   (datomic.transition/upsert! workflow-id transition))
 
+(s/defn patch-facade :- s/Uuid
+  [transition :- models.transition/TransitionLooseInputDef
+   workflow-id :- s/Uuid]
+  (datomic.transition/upsert! workflow-id transition))
+
 (s/defn delete-facade
   [_ :- s/Keyword
    id :- s/Uuid]

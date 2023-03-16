@@ -14,3 +14,4 @@ pom.xml.asc
 *.iml
 /.lsp/.cache
 /.clj-kondo/.cache
+internal-test
