@@ -53,3 +53,29 @@
            (dh.entity/find-all dh.entity/database-context
                                (datomic.core/connect!)
                                :transition/id))))
+
+(s/defn find-all-initial :- [models.transition/TransitionDef]
+  [workflow-id :- s/Uuid]
+  (let [db (d/db (datomic.core/connect!))
+        q '[:find [(pull ?e [* {:transition/status-to [*]}]) ...]
+            :in $ ?id-ks ?workflow-id
+            :where [?wf-e :workflow/id ?workflow-id]
+            [?wf-e :workflow/transitions ?e]
+            [(missing? $ ?e :transition/status-from)]
+            [?e ?id-ks]]]
+    (->> (d/q q db :transition/id workflow-id)
+         (dh.entity/transform-out))))
+
+(s/defn find-all-by-workflow-and-status-from :- [models.transition/TransitionDef]
+  [workflow-id :- s/Uuid
+   status-from :- s/Uuid]
+  (let [db (d/db (datomic.core/connect!))
+        q '[:find [(pull ?e [* {:transition/status-from [*] :transition/status-to [*]}]) ...]
+            :in $ ?id-ks ?workflow-id ?status-from
+            :where [?wf-e :workflow/id ?workflow-id]
+            [?wf-e :workflow/transitions ?e]
+            [?e :transition/status-from ?s]
+            [?s :status/id ?status-from]
+            [?e ?id-ks]]]
+    (->> (d/q q db :transition/id workflow-id status-from)
+         (dh.entity/transform-out))))
