@@ -4,6 +4,7 @@
             [clj-state-machine.ports.datomic.status :as datomic.status]
             [clj-state-machine.ports.datomic.transition :as datomic.transition]
             [clj-state-machine.ports.datomic.workflow :as datomic.workflow]
+            [clojure.data.json :as json]
             [clojure.test :refer :all]
             [core-test :refer [base-message id-as-string json-as-map
                                json-header map-as-json service test-fixture]]
@@ -65,11 +66,20 @@
    :transition/status-to status-open})
 
 (defn- transition-present-view
-  []
-  {:id (get transition-open-datomic :transition/id)
-   :name (get transition-open-datomic :transition/name)
-   :status-to {:id (:status/id status-open)
-               :name (:status/name status-open)}})
+  ([transition status-from status-to]
+   (assoc (transition-present-view transition status-to)
+     :status-from {:id (:status/id status-from)
+                   :name (:status/name status-from)}))
+  ([transition status-to]
+   {:id (get transition :transition/id)
+    :name (get transition :transition/name)
+    :status-to {:id (:status/id status-to)
+                :name (:status/name status-to)}})
+  ([]
+   {:id (get transition-open-datomic :transition/id)
+    :name (get transition-open-datomic :transition/name)
+    :status-to {:id (:status/id status-open)
+                :name (:status/name status-open)}}))
 
 (defn- transition-present-post-input
   []
@@ -159,9 +169,64 @@
       (is (= (map-as-json expected-resp) (:body actual-resp)))
       (is (= 404 (:status actual-resp)))))
 
-  (testing "not present uuid gives not found"
+  (testing "not present uuid gives empty"
     (let [expected-resp (assoc base-message :payload [])
           url (str "/workflow/" (p-helper/uuid) "/transition")
+          actual-resp (p.test/response-for service :get url)]
+      (is (= (map-as-json expected-resp) (:body actual-resp)))
+      (is (= 200 (:status actual-resp))))))
+
+(st/deftest get-status-from-transition-test
+  (datomic.workflow/upsert! workflow-present-datomic)
+  (datomic.workflow/upsert! workflow-2-present-datomic)
+  (datomic.transition/upsert! workflow-2-id (assoc transition-mobile-checkout-present-datomic
+                                              :transition/id (p-helper/uuid)))
+  (datomic.transition/upsert! workflow-id transition-open-datomic)
+  (datomic.transition/upsert! workflow-id transition-close-datomic)
+  (datomic.transition/upsert! workflow-id transition-mobile-checkout-present-datomic)
+  (testing "When no status-from is passed"
+    (let [expected-resp (assoc base-message :payload [(transition-present-view transition-open-datomic
+                                                                               status-open)
+                                                      (transition-present-view transition-mobile-checkout-present-datomic
+                                                                               status-open)])
+          url (str "/workflow/" workflow-id "/transition/status-from")
+          actual-resp (p.test/response-for service :get url)]
+      (is (= (map-as-json expected-resp) (:body actual-resp)))
+      (is (= 200 (:status actual-resp)))))
+
+  (testing "When status-from is passed"
+    (let [expected-resp (->> [(transition-present-view transition-close-datomic
+                                                       status-open
+                                                       status-closed)]
+                             (assoc base-message :payload))
+          url (str "/workflow/" workflow-id "/transition/status-from/" (:status/id status-open))
+          actual-resp (p.test/response-for service :get url)
+          actual-body (-> actual-resp
+                          :body
+                          json/read-str)]
+      (is (= 200 (:status actual-resp)))
+      (is (= (str (get-in expected-resp [:payload 0 :id])) (get-in actual-body ["payload" 0 "id"])))
+      (is (= 1 (-> expected-resp :payload count)))
+      (is (= (str (get-in expected-resp [:payload 0 :status-from :id]))
+             (get-in actual-body ["payload" 0 "status-from" "id"])))))
+
+  (testing "non uuid gives not found"
+    (let [expected-resp {:message "transition was not found with given id"}
+          url (str "/workflow/" workflow-id "/transition/status-from/39384")
+          actual-resp (p.test/response-for service :get url)]
+      (is (= (map-as-json expected-resp) (:body actual-resp)))
+      (is (= 404 (:status actual-resp)))))
+
+  (testing "non uuid workflow id gives not found"
+    (let [expected-resp {:message "transition was not found with given id"}
+          url (str "/workflow/39384/transition/status-from/" (p-helper/uuid))
+          actual-resp (p.test/response-for service :get url)]
+      (is (= (map-as-json expected-resp) (:body actual-resp)))
+      (is (= 404 (:status actual-resp)))))
+
+  (testing "not present uuid gives empty"
+    (let [expected-resp (assoc base-message :payload [])
+          url (str "/workflow/" workflow-id "/transition/status-from/" (p-helper/uuid))
           actual-resp (p.test/response-for service :get url)]
       (is (= (map-as-json expected-resp) (:body actual-resp)))
       (is (= 200 (:status actual-resp))))))

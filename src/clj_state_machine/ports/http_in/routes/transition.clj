@@ -31,6 +31,22 @@
                                              (controllers.utils/not-found-message language "transition" "id"))
           :else (controllers.utils/not-found-message language "transition" "id"))))
 
+(s/defn get-transition-by-status-from :- (in.commons/Response in.transition/GetTransitionPayloadDef)
+  [request :- {s/Keyword s/Any}]
+  (let [params (get request :path-params)
+        language (configs/get-language request)
+        workflow-id (-> params :workflow-id)
+        status-from (-> params :status-from)]
+    (cond (all-uuid-or-nil status-from
+                           workflow-id) (if-let [found (controllers.transition/get-by-status-from-facade (adapters.commons/str->uuid workflow-id)
+                                                                                                         (adapters.commons/str->uuid status-from))]
+                                          {:status  200
+                                           :headers controllers.utils/headers
+                                           :body    {:message ""
+                                                     :payload (adapters.transition/internal->wire found)}}
+                                          (controllers.utils/not-found-message language "transition" "id"))
+          :else (controllers.utils/not-found-message language "transition" "id"))))
+
 (s/defn extract-workflow-id!! :- s/Uuid
   [request :- {s/Keyword s/Any}]
   (let [workflow-id (-> request
