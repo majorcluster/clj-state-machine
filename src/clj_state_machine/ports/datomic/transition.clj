@@ -8,6 +8,24 @@
             [schema.core :as s])
   (:import (java.util UUID)))
 
+(s/defn ^:private unique!? :- s/Bool
+  [workflow-id :- s/Uuid
+   name :- s/Str]
+  (let [db (d/db (datomic.core/connect!))
+        q '[:find ?e .
+            :in $ ?workflow-id ?name
+            :where [?wf-e :workflow/id ?workflow-id]
+            [?wf-e :workflow/transitions ?e]
+            [?e :transition/name ?name]]]
+    (not (d/q q db workflow-id name))))
+
+(s/defn ^:private check-unique! :- s/Bool
+  [workflow-id :- s/Uuid
+   name :- s/Str]
+  (or (unique!? workflow-id name)
+      (throw (ex-info "Uniqueness Failure" {:type :bad-format
+                                            :message "A transition with worklow-id and name is already present"}))))
+
 (s/defn upsert! :- s/Uuid
   [workflow-id :- s/Uuid
    entity :- (aux.schema/either models.transition/TransitionInputDef
@@ -17,7 +35,7 @@
         id (cond id id
                  :else (p-helper/uuid))
         complete (assoc entity :transition/id id)]
-    (dh.entity/upsert! conn [:transition/id id] complete)
+    (dh.entity/upsert! conn [:transition/id id] complete #(check-unique! workflow-id (:transition/name entity)))
     (dh.entity/upsert-foreign!
      conn
      :transition/id id
@@ -37,7 +55,7 @@
 (s/defn find-one :- (s/maybe models.transition/TransitionDef)
   [id :- s/Uuid]
   (->> '[* {:transition/status-from [*] :transition/status-to [*]}]
-       (dh.entity/find-by-id dh.entity/database-context (datomic.core/connect!) :transition/id id)))
+       (dh.entity/find-by-id (datomic.core/connect!) :transition/id id)))
 
 (s/defn find-all :- [models.transition/TransitionDef]
   [workflow-id :- (s/maybe s/Uuid)]
@@ -50,8 +68,7 @@
                     (->> (d/q q db :transition/id workflow-id)
                          (dh.entity/transform-out)))
       (->> '[* {:transition/status-from [*] :transition/status-to [*]}]
-           (dh.entity/find-all dh.entity/database-context
-                               (datomic.core/connect!)
+           (dh.entity/find-all (datomic.core/connect!)
                                :transition/id))))
 
 (s/defn find-all-initial :- [models.transition/TransitionDef]

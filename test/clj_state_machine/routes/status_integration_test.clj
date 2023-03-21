@@ -114,6 +114,16 @@
       (is (= 200 (:status actual-resp)))
       (is (= (:status/id status-in-db)
              id-gotten-as-uuid))))
+  (testing "insert duplicated is not allowed"
+    (let [actual-resp (p.test/response-for service
+                                           :post "/status"
+                                           :headers json-header
+                                           :body (-> (status-present-view)
+                                                     (dissoc :id)
+                                                     map-as-json))
+          expected-resp {:message "A status with that name is already present"}]
+      (is (= 400 (:status actual-resp)))
+      (is (= (map-as-json expected-resp) (:body actual-resp)))))
   (testing "insert with missing mandatory params gives 400"
     (let [actual-resp (p.test/response-for service
                                            :post "/status"

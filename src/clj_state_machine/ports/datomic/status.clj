@@ -7,6 +7,19 @@
             [schema.core :as s])
   (:import (java.util UUID)))
 
+(s/defn ^:private unique!? :- s/Bool
+  [conn :- s/Any
+   name :- s/Str]
+  (dh.entity/check-unique! conn :status/id
+                           :status/name name))
+
+(s/defn ^:private check-unique! :- s/Bool
+  [conn :- s/Any
+   name :- s/Str]
+  (or (unique!? conn name)
+      (throw (ex-info "Uniqueness Failure" {:type :bad-format
+                                            :message "A status with that name is already present"}))))
+
 (s/defn upsert! :- s/Uuid
   [status :- models.status/StatusInputDef]
   (let [conn (datomic.core/connect!)
@@ -15,7 +28,7 @@
                  :else (p-helper/uuid))
         status-complete (assoc status :status/id id)
         lookup-ref [:status/id id]]
-    (dh.entity/upsert! conn lookup-ref status-complete)
+    (dh.entity/upsert! conn lookup-ref status-complete #(check-unique! conn (:status/name status)))
     id))
 
 (s/defn delete!
