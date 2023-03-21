@@ -113,6 +113,16 @@
       (is (= 200 (:status actual-resp)))
       (is (= (:workflow/id workflow-in-db)
              id-gotten-as-uuid))))
+  (testing "insert duplicated is not allowed"
+    (let [actual-resp (p.test/response-for service
+                                           :post "/workflow"
+                                           :headers json-header
+                                           :body (-> (workflow-present-view)
+                                                     (dissoc :id)
+                                                     map-as-json))
+          expected-resp {:message "A workflow with that name is already present"}]
+      (is (= 400 (:status actual-resp)))
+      (is (= (map-as-json expected-resp) (:body actual-resp)))))
   (testing "insert with missing mandatory params gives 400"
     (let [actual-resp (p.test/response-for service
                                            :post "/workflow"

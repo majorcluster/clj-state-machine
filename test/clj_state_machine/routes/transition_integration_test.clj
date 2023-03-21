@@ -265,6 +265,17 @@
                                                              :message "Field :status-to is not present"}]}]
       (is (= 400 (:status actual-resp)))
       (is (= (map-as-json expected-resp) (:body actual-resp)))))
+  (testing "insert duplicated is not allowed"
+    (let [transition (dissoc (transition-present-post-input) :id)
+          new-name "dispatching"
+          transition (assoc transition :name new-name)
+          actual-resp (p.test/response-for service
+                                           :post (str (workflow-present-url-piece) "/transition")
+                                           :headers json-header
+                                           :body (map-as-json transition))
+          expected-resp {:message "A transition with worklow-id and name is already present"}]
+      (is (= 400 (:status actual-resp)))
+      (is (= (map-as-json expected-resp) (:body actual-resp)))))
   (testing "insert with missing workflow-id gives 404"
     (let [actual-resp (p.test/response-for service
                                            :post "/transition"

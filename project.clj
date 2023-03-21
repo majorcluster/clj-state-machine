@@ -19,7 +19,7 @@
                  [prismatic/schema "1.4.1"]
                  [com.datomic/datomic-free "0.9.5697"]
                  [org.clojars.majorcluster/pedestal-api-helper "0.8.1"]
-                 [org.clojars.majorcluster/datomic-helper "2.0.2"]
+                 [org.clojars.majorcluster/datomic-helper "3.0.0"]
                  [org.clojars.majorcluster/clj-data-adapter "0.8.3"]]
   :min-lein-version "2.0.0"
   :aliases {"config"          ["run" "-m" "outpace.config.generate"]

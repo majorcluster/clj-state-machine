@@ -7,6 +7,19 @@
             [schema.core :as s])
   (:import (java.util UUID)))
 
+(s/defn ^:private unique!? :- s/Bool
+  [conn :- s/Any
+   name :- s/Str]
+  (dh.entity/check-unique! conn :workflow/id
+                           :workflow/name name))
+
+(s/defn ^:private check-unique! :- s/Bool
+  [conn :- s/Any
+   name :- s/Str]
+  (or (unique!? conn name)
+      (throw (ex-info "Uniqueness Failure" {:type :bad-format
+                                            :message "A workflow with that name is already present"}))))
+
 (s/defn upsert! :- s/Uuid
   [workflow :- models.workflow/WorkflowInputDef]
   (let [conn (datomic.core/connect!)
@@ -15,7 +28,7 @@
                  :else (p-helper/uuid))
         workflow-complete (assoc workflow :workflow/id id)
         lookup-ref [:workflow/id id]]
-    (dh.entity/upsert! conn lookup-ref workflow-complete)
+    (dh.entity/upsert! conn lookup-ref workflow-complete #(check-unique! conn (:workflow/name workflow)))
     id))
 
 (s/defn delete!
