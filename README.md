@@ -27,5 +27,5 @@ lein with-profile test test
 ```
 
 ## License
-[MIT](LICENSE.md)
-[Datomic Free License](https://www.datomic.com/datomic-free-edition-license.html)
+[MIT](LICENSE.md).  
+[Datomic Free License](https://www.datomic.com/datomic-free-edition-license.html).
