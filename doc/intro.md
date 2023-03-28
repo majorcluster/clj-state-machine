@@ -15,20 +15,24 @@ Core domain of the state-machine, each application connected to the `clj-state-m
 Example Response [200]:
 ```json
 {
-  "id": "1d4b8213-723f-40a4-be75-9131844cff74",
-  "name": "created"
+  "payload": {
+    "id": "1d4b8213-723f-40a4-be75-9131844cff74",
+    "name": "created"
+  }
 }
 ```
 - [GET] `/status`: Get all `status`   
 Example Response [200]:
 ```json
-[{
-  "id": "1d4b8213-723f-40a4-be75-9131844cff74",
-  "name": "created"
-},{
-  "id": "aa62f1a6-0c55-4a5a-9f96-c6d761988464",
-  "name": "done"
-}]
+{
+  "payload": [{
+    "id": "1d4b8213-723f-40a4-be75-9131844cff74",
+    "name": "created"
+  },{
+    "id": "aa62f1a6-0c55-4a5a-9f96-c6d761988464",
+    "name": "done"
+  }]
+}
 ```
 - [POST] `/status`: Insert a new `status`      
   - Request:
@@ -37,13 +41,17 @@ Example Response [200]:
     - id: uuid
   - Example Request:
 ```json
-{"name": "created"}
+{
+  "payload": {
+    "name": "created"
+  }
+}
 ```
   - Example Response:
 ```json
-{"payload":
-  {
-  "id": "1d4b8213-723f-40a4-be75-9131844cff74"
+{
+  "payload": {
+    "id": "1d4b8213-723f-40a4-be75-9131844cff74"
   }
 }
 ```
@@ -56,15 +64,17 @@ Example Response [200]:
     - Example Request:
 ```json
 {
-  "id": "1d4b8213-723f-40a4-be75-9131844cff74",
-  "name": "updated"
+  "payload": {
+    "id": "1d4b8213-723f-40a4-be75-9131844cff74",
+    "name": "updated"
+  }
 }
 ```
 - Example Response:
 ```json
-{"payload":
-  {
-  "id": "1d4b8213-723f-40a4-be75-9131844cff74"
+{
+  "payload": {
+    "id": "1d4b8213-723f-40a4-be75-9131844cff74"
   }
 }
 ```
@@ -85,36 +95,40 @@ Connect statuses, when a `transition` between statuses is set they are allowed t
   Example Response [200]:
 ```json
 {
-  "id": "3b938a31-e97b-4964-a62a-2671c1435d9b",
-  "name": "create",
-  "status-from": {
-    "id": "1d4b8213-723f-40a4-be75-9131844cff74",
-    "name": "created"
+  "payload": {
+    "id": "3b938a31-e97b-4964-a62a-2671c1435d9b",
+    "name": "create",
+    "status-from": {
+      "id": "1d4b8213-723f-40a4-be75-9131844cff74",
+      "name": "created"
+    }
   }
 }
 ```
 - [GET] `/transition`: Get all transitions   
   Example Response:
 ```json
-[{
-  "id": "3b938a31-e97b-4964-a62a-2671c1435d9b",
-  "name": "create",
-  "status-to": {
-    "id": "1d4b8213-723f-40a4-be75-9131844cff74",
-    "name": "created"
-  }
-},{
-  "id": "eb078bb4-1c50-4d84-95b5-f235249cd8fa",
-  "name": "finish",
-  "status-from": {
-    "id": "1d4b8213-723f-40a4-be75-9131844cff74",
-    "name": "created"
-  },
-  "status-to": {
-    "id": "aa62f1a6-0c55-4a5a-9f96-c6d761988464",
-    "name": "done"
-  }
-}]
+{
+  "payload": [{
+    "id": "3b938a31-e97b-4964-a62a-2671c1435d9b",
+    "name": "create",
+    "status-to": {
+      "id": "1d4b8213-723f-40a4-be75-9131844cff74",
+      "name": "created"
+    }
+  },{
+    "id": "eb078bb4-1c50-4d84-95b5-f235249cd8fa",
+    "name": "finish",
+    "status-from": {
+      "id": "1d4b8213-723f-40a4-be75-9131844cff74",
+      "name": "created"
+    },
+    "status-to": {
+      "id": "aa62f1a6-0c55-4a5a-9f96-c6d761988464",
+      "name": "done"
+    }
+  }]
+}
 ```
 - [DELETE] `/transition/:transition-id`: Delete `transition` by `transition-id` [uuid]   
   Response [204]
@@ -131,15 +145,17 @@ Connect statuses, when a `transition` between statuses is set they are allowed t
     - Example Request:
 ```json
 {
-  "name": "create",
-  "status-to":  "1d4b8213-723f-40a4-be75-9131844cff74"
+  "payload": {
+    "name": "create",
+    "status-to":  "1d4b8213-723f-40a4-be75-9131844cff74"
+  }
 }
 ```
 - Example Response:
 ```json
-{"payload":
-  {
-  "id": "1d4b8213-723f-40a4-be75-9131844cff74"
+{
+  "payload": {
+    "id": "1d4b8213-723f-40a4-be75-9131844cff74"
   }
 }
 ```
@@ -147,25 +163,27 @@ Connect statuses, when a `transition` between statuses is set they are allowed t
 - [GET] `/workflow/:worfklow-id/transition`: Get transitions by `workflow-id` [uuid]   
   Example Response [200]:
 ```json
-[{
-  "id": "3b938a31-e97b-4964-a62a-2671c1435d9b",
-  "name": "create",
-  "status-to": {
-    "id": "1d4b8213-723f-40a4-be75-9131844cff74",
-    "name": "created"
-  }
-},{
-  "id": "eb078bb4-1c50-4d84-95b5-f235249cd8fa",
-  "name": "finish",
-  "status-from": {
-    "id": "1d4b8213-723f-40a4-be75-9131844cff74",
-    "name": "created"
-  },
-  "status-to": {
-    "id": "aa62f1a6-0c55-4a5a-9f96-c6d761988464",
-    "name": "done"
-  }
-}]
+{
+  "payload": [{
+    "id": "3b938a31-e97b-4964-a62a-2671c1435d9b",
+    "name": "create",
+    "status-to": {
+      "id": "1d4b8213-723f-40a4-be75-9131844cff74",
+      "name": "created"
+    }
+  },{
+    "id": "eb078bb4-1c50-4d84-95b5-f235249cd8fa",
+    "name": "finish",
+    "status-from": {
+      "id": "1d4b8213-723f-40a4-be75-9131844cff74",
+      "name": "created"
+    },
+    "status-to": {
+      "id": "aa62f1a6-0c55-4a5a-9f96-c6d761988464",
+      "name": "done"
+    }
+  }]
+}
 ```
 
 - [PATCH] `/workflow/:worfklow-id/transition`: Patches `transition` properties from a `workflow`
@@ -181,46 +199,52 @@ Connect statuses, when a `transition` between statuses is set they are allowed t
     - Example Request:
 ```json
 {
-  "id": "1d4b8213-723f-40a4-be75-9131844cff74",
-  "name": "create-new-name",
-  "status-to":  "1d4b8213-723f-40a4-be75-9131844cff74"
+  "payload": {
+    "id": "1d4b8213-723f-40a4-be75-9131844cff74",
+    "name": "create-new-name",
+    "status-to":  "1d4b8213-723f-40a4-be75-9131844cff74"
+  }
 }
 ```
 - Example Response:
 ```json
-{"payload":
-  {
-  "id": "1d4b8213-723f-40a4-be75-9131844cff74"
+{
+  "payload": {
+    "id": "1d4b8213-723f-40a4-be75-9131844cff74"
   }
 }
 ```
 - [GET] `/workflow/:workflow-id/transition/status-from`: Get all initial transitions (no `status-from`) by `workflow-id` [uuid]   
   Example Response [200]:
 ```json
-[{
-  "id": "3b938a31-e97b-4964-a62a-2671c1435d9b",
-  "name": "create",
-  "status-to": {
-    "id": "1d4b8213-723f-40a4-be75-9131844cff74",
-    "name": "created"
-  }
-}]
+{
+  "payload": [{
+    "id": "3b938a31-e97b-4964-a62a-2671c1435d9b",
+    "name": "create",
+    "status-to": {
+      "id": "1d4b8213-723f-40a4-be75-9131844cff74",
+      "name": "created"
+    }
+  }]
+}
 ```
 - [GET] `/workflow/:workflow-id/transition/status-from/:status-from`: Get all transitions by `workflow-id` [uuid] and `status-from` [uuid]
   Example Response [200]:
 ```json
-[{
-  "id": "eb078bb4-1c50-4d84-95b5-f235249cd8fa",
-  "name": "finish",
-  "status-from": {
-    "id": "1d4b8213-723f-40a4-be75-9131844cff74",
-    "name": "created"
-  },
-  "status-to": {
-    "id": "aa62f1a6-0c55-4a5a-9f96-c6d761988464",
-    "name": "done"
-  }
-}]
+{
+  "payload": [{
+    "id": "eb078bb4-1c50-4d84-95b5-f235249cd8fa",
+    "name": "finish",
+    "status-from": {
+      "id": "1d4b8213-723f-40a4-be75-9131844cff74",
+      "name": "created"
+    },
+    "status-to": {
+      "id": "aa62f1a6-0c55-4a5a-9f96-c6d761988464",
+      "name": "done"
+    }
+  }]
+}
 ```
 
 ## Workflow
@@ -235,20 +259,24 @@ Group a list of transitions. Every `transtion` must belong to a `workflow`.
   Example Response:
 ```json
 {
-  "id": "b6bb143b-c06a-48af-9e7f-49dbda390cf5",
-  "name": "orders-wf"
+  "payload": {
+    "id": "b6bb143b-c06a-48af-9e7f-49dbda390cf5",
+    "name": "orders-wf"
+  }
 }
 ```
 - [GET] `/workflow`: Get all workflows   
   Example Response:
 ```json
-[{
-  "id": "b6bb143b-c06a-48af-9e7f-49dbda390cf5",
-  "name": "orders-wf"
-},{
-  "id": "7b5c4b2a-e3ac-41cf-b738-aab5c57117b2",
-  "name": "payments-wf"
-}]
+{
+  "payload": [{
+    "id": "b6bb143b-c06a-48af-9e7f-49dbda390cf5",
+    "name": "orders-wf"
+  },{
+    "id": "7b5c4b2a-e3ac-41cf-b738-aab5c57117b2",
+    "name": "payments-wf"
+  }]
+}
 ```
 - [POST] `/workflow`: Insert a new `workflow`
     - Request:
@@ -257,13 +285,17 @@ Group a list of transitions. Every `transtion` must belong to a `workflow`.
         - id: uuid
     - Example Request:
 ```json
-{"name": "orders-wf"}
+{
+  "payload": {
+    "name": "orders-wf"
+  }
+}
 ```
 - Example Response:
 ```json
-{"payload":
-  {
-  "id": "b6bb143b-c06a-48af-9e7f-49dbda390cf5"
+{
+  "payload": {
+    "id": "b6bb143b-c06a-48af-9e7f-49dbda390cf5"
   }
 }
 ```
@@ -276,15 +308,17 @@ Group a list of transitions. Every `transtion` must belong to a `workflow`.
     - Example Request:
 ```json
 {
-  "id": "b6bb143b-c06a-48af-9e7f-49dbda390cf5",
-  "name": "updated-orders-wf"
+  "payload": {
+    "id": "b6bb143b-c06a-48af-9e7f-49dbda390cf5",
+    "name": "updated-orders-wf"
+  }
 }
 ```
 - Example Response:
 ```json
-{"payload":
-  {
-  "id": "b6bb143b-c06a-48af-9e7f-49dbda390cf5"
+{
+  "payload": {
+    "id": "b6bb143b-c06a-48af-9e7f-49dbda390cf5"
   }
 }
 ```
